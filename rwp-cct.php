@@ -91,6 +91,11 @@ class RWP_CCT_Plugin {
         // Load shortcodes class
         require_once RWP_CCT_PLUGIN_DIR . 'includes/frontend/class-shortcodes.php';
         new RWP_CCT_Shortcodes();
+
+        // Load API classes
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-jwt-handler.php';
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-auth-api.php';
+        new RWP_CCT_Auth_API();
     }
 
     /**
@@ -113,6 +118,12 @@ class RWP_CCT_Plugin {
 
         // Store activation time
         update_option('rwp_cct_activated_time', current_time('timestamp'));
+
+        // Generate JWT secret key
+        if (!get_option('rwp_cct_jwt_secret')) {
+            require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-jwt-handler.php';
+            RWP_CCT_JWT_Handler::generate_jwt_secret();
+        }
 
         do_action('rwp_cct_activated');
     }

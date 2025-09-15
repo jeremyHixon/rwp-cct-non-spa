@@ -50,6 +50,15 @@
 - `.rwp-cct-container`: Full-page dark container
 - `.rwp-cct-form-group`: Consistent form field spacing
 
+#### Authentication Components
+- `.rwp-cct-auth-container`: Authentication form wrapper with proper spacing
+- `.rwp-cct-auth-tabs`: Tab navigation for login/register forms
+- `.rwp-cct-auth-tab`: Individual tab styling with active states
+- `.rwp-cct-auth-form`: Authentication-specific form styling
+- `.rwp-cct-password-toggle`: Password visibility toggle button
+- `.rwp-cct-auth-link`: Links within authentication flows (forgot password, sign up, etc.)
+- `.rwp-cct-auth-divider`: Visual separators between form sections
+
 ### Plugins
 - **@tailwindcss/forms**: Integrated for consistent form styling across browsers
 - **Strategy**: Class-based forms for explicit control
@@ -92,6 +101,51 @@
 - **Format options**: Full guide, compact view, or quick reference format
 - **Print-friendly**: Organized layout suitable for reference documentation
 - **Developer tool**: Enables consistent styling across plugin and external page builders
+
+## Authentication UI Patterns
+
+### Login/Register Form Design
+- **Container**: Centered form with maximum 400px width for optimal readability
+- **Tab navigation**: Clear visual distinction between login and registration modes
+- **Form fields**: Consistent spacing (mb-4) between form groups
+- **Input styling**: Dark theme with focus ring using primary colors
+- **Button hierarchy**: Primary button for main action, secondary for alternatives
+- **Password fields**: Include visibility toggle with eye icon
+
+### Error Message Display
+- **Color scheme**: Use red-400 for error text against dark backgrounds
+- **Positioning**: Display errors directly below relevant form fields
+- **Animation**: Subtle fade-in animation for error appearance
+- **Icon usage**: Include warning icon for visual emphasis
+- **Message tone**: Clear, actionable language without technical jargon
+
+### Loading States
+- **Button loading**: Replace button text with spinner during authentication
+- **Form disabling**: Disable all form inputs during submission
+- **Visual feedback**: Use primary color for loading spinners
+- **Timing**: Show loading state immediately on form submission
+- **Accessibility**: Include screen reader text for loading states
+
+### Success/Confirmation Messaging
+- **Color scheme**: Use accent colors (green-400) for success states
+- **Positioning**: Replace form content or display as overlay
+- **Icons**: Checkmark icon for successful operations
+- **Auto-redirect**: Brief success message before redirecting (2-3 seconds)
+- **User feedback**: Clear indication of what happened and next steps
+
+### Password Strength Indicators
+- **Visual design**: Horizontal bar with color-coded strength levels
+- **Color progression**: Red (weak) → Yellow (fair) → Green (strong)
+- **Real-time feedback**: Update strength indicator as user types
+- **Requirements list**: Show specific requirements with check/x indicators
+- **Positioning**: Below password field, above submit button
+
+### Authentication States
+- **Unauthenticated**: Show login/register options
+- **Loading**: Display spinner and disable interactions
+- **Authenticated**: Show user info and logout option
+- **Error**: Display error message with retry option
+- **Expired session**: Prompt for re-authentication with context
 
 ## UI Principles
 - Functional over decorative
