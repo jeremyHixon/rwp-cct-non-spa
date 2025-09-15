@@ -16,6 +16,11 @@ const StepNavigation = ({
     return `Next: ${nextStepTitle}`;
   };
 
+  // Hide navigation on the final step (Generated step)
+  if (currentStep === totalSteps) {
+    return null;
+  }
+
   return (
     <div className="flex justify-between items-center">
       <button

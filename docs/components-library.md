@@ -256,11 +256,13 @@ Complete 4-step wizard for creating social media captions with premium features 
 - Dark theme consistency with authentication components
 - File upload handling with drag-and-drop interface
 
-**Step 1 - Content Input:**
-- Universal text description field (required, full-width, character count)
-- Premium image upload with drag-and-drop, 10MB limit, image preview
-- Premium URL field with basic validation and format checking
-- AuthGate-protected premium fields with appropriate fallback messages
+**Step 1 - Content Input (Alternative Content Sources):**
+- **Alternative Content Source Logic**: Requires AT LEAST ONE content source (description OR image OR URL), not all three
+- **Text Description**: Optional when using image/URL, available to all users with character count display
+- **Image Upload**: Premium drag-and-drop interface with 10MB limit and preview, disables other fields when selected
+- **URL Field**: Premium field with validation, disables other fields when entered
+- **Field Interaction**: Mutual exclusivity with optional field disabling and visual feedback
+- **Visual Design**: Clear "OR" separator between content sources, disabled field styling with explanatory placeholders
 
 **Step 2 - Platform Selection:**
 - Multi-select platform cards with brand icons and character limits
@@ -310,12 +312,17 @@ Step 1 component with content input fields and premium access controls.
 - `data`: Current form data object
 - `onUpdate`: Callback function to update form data
 
-**Form Fields:**
-- `description`: Universal text description (required)
-- `image`: Premium file upload with preview (File object)
-- `url`: Premium URL field with validation (string)
+**Form Fields (Alternative Content Sources):**
+- `description`: Text description (optional when using image/URL, string)
+- `image`: Premium file upload with preview (File object, optional)
+- `url`: Premium URL field with validation (string, optional)
+- **Validation Logic**: Requires AT LEAST ONE content source present
 
 **Features:**
+- **Alternative Content Source Validation**: Requires description OR image OR URL (not all three)
+- **Field Interaction Logic**: Optional mutual exclusivity with field disabling when another source is selected
+- **Visual Indicators**: "OR" separator between content sources, disabled field styling with explanatory placeholders
+- **Updated Labels**: Dynamic labels showing optional/disabled state based on content source selection
 - Responsive layout (2-column premium fields on desktop, stacked on mobile)
 - Drag-and-drop file upload with visual feedback
 - File validation (10MB limit, image formats only)
@@ -605,7 +612,211 @@ import StepIndicator from './components/caption-generator/components/StepIndicat
 - WordPress shortcode: `includes/shortcodes/class-rwp-cct-caption-generator-shortcode.php`
 - React initialization: `src/caption-generator-init.js`
 
-**Implementation:** Steps 1-3 complete, Step 4 pending development
+**Step 4 - Generated Captions:** Complete AI-powered caption generation with OpenAI integration
+- **GeneratedStep component** displaying 4 generated caption variations with copy-to-clipboard functionality
+- **Unified OpenAI Service** with admin settings integration for API key and model management
+- **REST API endpoints** for caption generation with JWT authentication and file upload support
+- **Platform validation system** with visual feedback (green/yellow/red indicators) for character limits
+- **Premium features**: Image analysis using OpenAI Vision API and URL context extraction
+- **User interaction controls**: "Generate More" and "Start Over" buttons with loading states
+- **Rate limiting** based on user role (admin: 100/hr, premium: 50/hr, regular: 20/hr)
+- **Security features**: JWT authentication, file upload validation, API key encryption
+
+##### GeneratedStep (`src/components/caption-generator/steps/GeneratedStep.jsx`)
+Step 4 component displaying AI-generated captions with platform validation and user interaction controls.
+
+**Props:**
+- `data`: Form data containing description, platforms, tone, image, and URL
+- `onStartOver`: Callback to reset wizard to Step 1
+
+**Form Data Input:**
+- `data.description`: Content description (string, required)
+- `data.selectedPlatforms`: Array of platform IDs (array, required)
+- `data.selectedTone`: Selected tone ID (string, required)
+- `data.image`: File object for image analysis (File, optional, premium)
+- `data.url`: Reference URL for context (string, optional, premium)
+
+**Features:**
+- **Auto-generation**: Automatically triggers caption generation when component mounts
+- **Caption display**: 4 generated variations in responsive card grid layout
+- **Copy functionality**: One-click copy-to-clipboard with visual feedback
+- **Platform validation**: Real-time character count validation with color-coded indicators
+- **Loading states**: Spinner with progress messages during API calls
+- **Error handling**: Comprehensive error display with retry functionality
+- **Action buttons**: "Generate More" for additional variations, "Start Over" to reset wizard
+
+**Caption Display Structure:**
+```jsx
+const captionCard = {
+  text: "Generated caption text",
+  length: 156, // Character count
+  platform_validation: {
+    twitter: { status: 'good', length: 156, limit: 280, is_valid: true },
+    facebook: { status: 'good', length: 156, limit: 2000, is_valid: true }
+    // ... validation for each selected platform
+  }
+};
+```
+
+**Platform Validation Indicators:**
+- **Green (✓)**: Caption fits perfectly within platform limits (≤ ideal length)
+- **Yellow (⚠)**: Caption exceeds ideal but within maximum limit
+- **Red (✗)**: Caption exceeds maximum platform character limit
+
+**API Integration:**
+```jsx
+const generateCaptions = async () => {
+  const formData = new FormData();
+  formData.append('description', data.description);
+  formData.append('platforms', JSON.stringify(data.selectedPlatforms));
+  formData.append('tone', data.selectedTone);
+  if (data.image) formData.append('image', data.image);
+  if (data.url) formData.append('url', data.url);
+
+  const response = await fetch('/wp-json/rwp-cct/v1/captions/generate', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  });
+};
+```
+
+**Copy-to-Clipboard Implementation:**
+```jsx
+const copyToClipboard = async (text, index) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000); // 2-second feedback
+  } catch (err) {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+  }
+};
+```
+
+**Usage:**
+```jsx
+import GeneratedStep from './components/caption-generator/steps/GeneratedStep';
+<GeneratedStep
+  data={{
+    description: "Product launch announcement",
+    selectedPlatforms: ['twitter', 'linkedin'],
+    selectedTone: 'professional',
+    image: fileObject, // Optional
+    url: 'https://example.com' // Optional
+  }}
+  onStartOver={() => resetWizard()}
+/>
+```
+
+**Visual Specifications:**
+- **Layout**: Responsive 2-column grid on desktop, single column on mobile
+- **Caption cards**: Dark background (gray-800) with rounded corners and hover effects
+- **Character counts**: Displayed with muted styling below caption text
+- **Platform indicators**: Color-coded validation per platform with character limits
+- **Action buttons**: Centered below caption grid with adequate spacing
+- **Loading state**: Centered spinner with descriptive progress text
+
+##### OpenAI Service Integration (`includes/services/class-rwp-cct-openai-service.php`)
+Backend service class for OpenAI API integration with admin settings and premium features.
+
+**Features:**
+- **Admin settings integration**: Retrieves API key and models from WordPress admin
+- **Unified caption generation**: Single API call for 4 caption variations
+- **Platform optimization**: Targets most restrictive selected platform character limit
+- **Premium image analysis**: OpenAI Vision API for premium users
+- **URL context extraction**: Placeholder for premium URL analysis
+- **Character limit validation**: Per-platform validation with ideal/warning/error states
+
+**Public Methods:**
+```php
+// Generate captions using OpenAI API
+public function generate_captions($params)
+
+// Get platform character limits
+public function get_platform_limits()
+
+// Validate caption for specific platform
+public function validate_caption_for_platform($caption, $platform)
+```
+
+**Platform Limits:**
+```php
+const PLATFORM_LIMITS = array(
+    'twitter' => 280,
+    'facebook' => 2000,
+    'instagram' => 2200,
+    'linkedin' => 3000,
+    'tiktok' => 150,
+    'youtube' => 5000
+);
+```
+
+**Caption Generation Parameters:**
+- `description` (required): Content description text
+- `platforms` (required): Array of selected platform IDs
+- `tone` (required): Selected tone identifier
+- `image` (optional): File object for image analysis (premium)
+- `url` (optional): Reference URL for context (premium)
+
+##### Caption Generation API (`includes/api/class-rwp-cct-caption-api.php`)
+REST API endpoints for caption generation with authentication and validation.
+
+**Endpoints:**
+- `POST /wp-json/rwp-cct/v1/captions/generate` - Generate 4 caption variations
+- `POST /wp-json/rwp-cct/v1/captions/validate` - Validate caption for platforms
+
+**Authentication:**
+- JWT token required in Authorization header: `Bearer {token}`
+- User authentication verified via `RWP_CCT_JWT_Handler`
+- Rate limiting per user role with transient storage
+
+**File Upload Support:**
+- Image files only (JPEG, PNG, GIF, WebP)
+- 10MB maximum file size
+- Temporary file storage with cleanup
+- Premium users only for image analysis
+
+**Rate Limiting:**
+- **Admin users**: 100 requests per hour
+- **Premium users**: 50 requests per hour
+- **Regular users**: 20 requests per hour
+- Tracked per user per hour with WordPress transients
+
+**API Response Format:**
+```json
+{
+  "success": true,
+  "captions": [
+    {
+      "text": "Generated caption text here",
+      "length": 156,
+      "platform_validation": {
+        "twitter": {
+          "status": "good",
+          "length": 156,
+          "limit": 280,
+          "ideal_limit": 224,
+          "is_valid": true
+        }
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 50,
+    "completion_tokens": 200,
+    "total_tokens": 250
+  }
+}
+```
+
+**Implementation:** Complete 4-step wizard with AI integration and production-ready API
 
 #### StyleGuide (WordPress Shortcode)
 Comprehensive dark theme style guide for Elementor and external tool reference.

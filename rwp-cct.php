@@ -101,6 +101,13 @@ class RWP_CCT_Plugin {
         require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-auth-api.php';
         new RWP_CCT_Auth_API();
 
+        // Load service classes
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/services/class-rwp-cct-openai-service.php';
+
+        // Load caption generation API
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-caption-api.php';
+        new RWP_CCT_Caption_API();
+
         // Load security class
         require_once RWP_CCT_PLUGIN_DIR . 'includes/class-rwp-cct-security.php';
         new RWP_CCT_Security();

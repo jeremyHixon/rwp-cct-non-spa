@@ -19,13 +19,24 @@ class RWP_CCT_Caption_Generator_Shortcode {
         // Create unique container ID
         $container_id = 'rwp-cct-caption-generator-' . wp_generate_uuid4();
 
+        // Add WordPress REST API nonce for authenticated users
+        $nonce_script = '';
+        if (is_user_logged_in()) {
+            $nonce_script = sprintf(
+                'window.rwpCctRestNonce = "%s";',
+                wp_create_nonce('wp_rest')
+            );
+        }
+
         // Add inline script to initialize the caption generator
         $inline_script = sprintf(
-            'document.addEventListener("DOMContentLoaded", function() {
+            '%s
+            document.addEventListener("DOMContentLoaded", function() {
                 if (window.RWP_CCT_CaptionGenerator) {
                     window.RWP_CCT_CaptionGenerator.init("%s");
                 }
             });',
+            $nonce_script,
             esc_js($container_id)
         );
 

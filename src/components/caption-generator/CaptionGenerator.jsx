@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ContentStep from './steps/ContentStep';
 import PlatformStep from './steps/PlatformStep';
 import ToneStep from './steps/ToneStep';
+import GeneratedStep from './steps/GeneratedStep';
 import StepNavigation from './components/StepNavigation';
 import StepIndicator from './components/StepIndicator';
 
@@ -30,6 +31,17 @@ const CaptionGenerator = () => {
     }
   };
 
+  const handleStartOver = () => {
+    setCurrentStep(1);
+    setFormData({
+      description: '',
+      image: null,
+      url: '',
+      selectedPlatforms: [],
+      selectedTone: ''
+    });
+  };
+
   const updateFormData = (stepData) => {
     setFormData({ ...formData, ...stepData });
   };
@@ -37,7 +49,14 @@ const CaptionGenerator = () => {
   const isStepValid = () => {
     switch (currentStep) {
       case 1:
-        return formData.description.trim().length > 0;
+        // Step 1 validation: Require AT LEAST ONE content source (description OR image OR URL)
+        const hasContent = (
+          (formData.description && formData.description.trim().length > 0) ||
+          (formData.image) ||
+          (formData.url && formData.url.trim().length > 0)
+        );
+
+        return hasContent;
       case 2:
         return formData.selectedPlatforms && formData.selectedPlatforms.length > 0;
       case 3:
@@ -68,6 +87,13 @@ const CaptionGenerator = () => {
           <ToneStep
             data={formData}
             onUpdate={updateFormData}
+          />
+        );
+      case 4:
+        return (
+          <GeneratedStep
+            data={formData}
+            onStartOver={handleStartOver}
           />
         );
       default:
