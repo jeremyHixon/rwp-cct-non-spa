@@ -37,6 +37,24 @@
 ## Completed Tasks
 
 ### Recent Completions
+- **✅ User Badge Labels & Demo Visibility UI Fixes** (Priority: High, Category: Bug)
+  - **Issue**: User badges displayed technical role names like "rwp_cct_premium" instead of user-friendly labels, and premium users couldn't see protected content in "No Preview" demo section
+  - **Technical Implementation**:
+    - Added `getRoleDisplayName()` function to map technical roles to friendly display names
+    - Updated `HeaderUserElement.jsx` to show "Subscriber", "Premium", "Admin" instead of raw role strings
+    - Fixed demo content visibility in `ProtectedDemo.jsx` - premium users now see confirmation content
+    - Updated status display in `demo-init.js` to use consistent friendly role names
+    - Applied consistent role mapping across all components displaying user roles
+  - **Role Display Mapping**:
+    - `subscriber` → "Subscriber"
+    - `rwp_cct_premium` → "Premium"
+    - `contributor`/`author`/`editor`/`administrator` → "Admin"
+  - **Demo Content Fix**:
+    - "No Preview (Premium Required)" section now shows green success message to premium+ users
+    - Non-premium users see nothing (content properly hidden)
+    - Premium users see confirmation: "✓ This premium content is now visible to you!"
+  - **Verification**: Build successful with no syntax errors, all role display components updated
+  - **Result**: Consistent user-friendly role labels throughout UI and correct premium content visibility
 - **✅ Protected Content Demo Shortcode** (Priority: High, Category: Feature)
   - **Implementation**: Created `[rwp_cct_protected_demo]` shortcode to demonstrate AuthGate and ProtectedContent functionality
   - **Technical Details**:

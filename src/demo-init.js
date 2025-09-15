@@ -29,11 +29,24 @@ function updateAuthStatus() {
     statusElement.innerHTML = `
       <div class="space-y-1">
         <div><strong>Authenticated:</strong> ${isAuthenticated ? 'Yes' : 'No'}</div>
-        <div><strong>Role:</strong> ${userRole}</div>
+        <div><strong>Role:</strong> ${getRoleDisplayName(userRole)}</div>
         <div><strong>Access Level:</strong> ${getAccessLevel(userRole)}</div>
       </div>
     `;
   }
+}
+
+function getRoleDisplayName(role) {
+  const roleMap = {
+    'guest': 'Guest',
+    'subscriber': 'Subscriber',
+    'rwp_cct_premium': 'Premium',
+    'contributor': 'Admin',
+    'author': 'Admin',
+    'editor': 'Admin',
+    'administrator': 'Admin'
+  };
+  return roleMap[role] || 'Unknown';
 }
 
 function getAccessLevel(role) {

@@ -101,15 +101,26 @@ const HeaderUserElement = ({ container }) => {
     window.dispatchEvent(event);
   };
 
+  const getRoleDisplayName = (role) => {
+    const roleMap = {
+      'subscriber': 'Subscriber',
+      'rwp_cct_premium': 'Premium',
+      'contributor': 'Admin',
+      'author': 'Admin',
+      'editor': 'Admin',
+      'administrator': 'Admin'
+    };
+    return roleMap[role] || 'User';
+  };
+
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'administrator':
-        return 'bg-gray-700 text-gray-200';
       case 'editor':
-        return 'bg-purple-600 text-white';
       case 'author':
-        return 'bg-green-600 text-white';
       case 'contributor':
+        return 'bg-gray-700 text-gray-200';
+      case 'rwp_cct_premium':
         return 'bg-blue-600 text-white';
       case 'subscriber':
       default:
@@ -139,7 +150,7 @@ const HeaderUserElement = ({ container }) => {
           {user.role && (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
               <Shield className="w-3 h-3 inline mr-1" />
-              {user.role}
+              {getRoleDisplayName(user.role)}
             </span>
           )}
         </div>

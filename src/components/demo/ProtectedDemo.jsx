@@ -104,8 +104,9 @@ const ProtectedDemo = () => {
         <div className="bg-gray-800 p-4 rounded">
           <h4 className="text-sm font-medium text-gray-300 mb-2">No Preview (Premium Required)</h4>
           <ProtectedContent requiredRole="rwp_cct_premium" showPreview={false}>
-            <div className="bg-red-900/20 border border-red-500 p-4 rounded">
-              <p className="text-red-200">This content is completely hidden from non-premium users.</p>
+            <div className="bg-green-900/20 border border-green-500 p-4 rounded">
+              <p className="text-green-200">✓ This premium content is now visible to you!</p>
+              <p className="text-green-300 text-sm mt-1">Non-premium users see nothing in this section.</p>
             </div>
           </ProtectedContent>
         </div>
