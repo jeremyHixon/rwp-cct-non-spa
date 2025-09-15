@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ContentStep from './steps/ContentStep';
 import PlatformStep from './steps/PlatformStep';
+import ToneStep from './steps/ToneStep';
 import StepNavigation from './components/StepNavigation';
 import StepIndicator from './components/StepIndicator';
 
@@ -10,7 +11,8 @@ const CaptionGenerator = () => {
     description: '',
     image: null,
     url: '',
-    selectedPlatforms: []
+    selectedPlatforms: [],
+    selectedTone: ''
   });
 
   const totalSteps = 4;
@@ -38,6 +40,8 @@ const CaptionGenerator = () => {
         return formData.description.trim().length > 0;
       case 2:
         return formData.selectedPlatforms && formData.selectedPlatforms.length > 0;
+      case 3:
+        return formData.selectedTone && formData.selectedTone.length > 0;
       default:
         return true;
     }
@@ -55,6 +59,13 @@ const CaptionGenerator = () => {
       case 2:
         return (
           <PlatformStep
+            data={formData}
+            onUpdate={updateFormData}
+          />
+        );
+      case 3:
+        return (
+          <ToneStep
             data={formData}
             onUpdate={updateFormData}
           />

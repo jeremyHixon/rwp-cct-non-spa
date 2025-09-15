@@ -270,6 +270,14 @@ Complete 4-step wizard for creating social media captions with premium features 
 - Selection validation requiring at least one platform
 - Responsive grid layout adapting to screen size
 
+**Step 3 - Tone Selection:**
+- Single-select tone cards with radio button interface
+- 5 tone options: Professional, Casual, Creative, Educational, Inspirational
+- Descriptive tone cards showing tone names and descriptions for context
+- Visual selection feedback matching PlatformStep design
+- Selection validation requiring exactly one tone selected
+- Responsive grid layout with same visual consistency
+
 **Components:**
 
 ##### CaptionGenerator (`src/components/caption-generator/CaptionGenerator.jsx`)
@@ -445,6 +453,89 @@ import PlatformStep from './components/caption-generator/steps/PlatformStep';
 - Selection indicators with blue borders and background overlays
 - Responsive grid layout with mobile-optimized spacing
 
+##### ToneStep (`src/components/caption-generator/steps/ToneStep.jsx`)
+Step 3 component with single-select tone selection using radio button cards.
+
+**Props:**
+- `data`: Current form data object containing `selectedTone` string
+- `onUpdate`: Callback function to update form data
+
+**Form Fields:**
+- `selectedTone`: Selected tone ID (string, single selection)
+
+**Tone Data Structure:**
+```jsx
+const tones = [
+  {
+    id: 'professional',
+    name: 'Professional',
+    description: 'Business-focused, formal, and authoritative tone'
+  },
+  {
+    id: 'casual',
+    name: 'Casual',
+    description: 'Friendly, conversational, and approachable tone'
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    description: 'Fun, playful, and imaginative tone'
+  },
+  {
+    id: 'educational',
+    name: 'Educational',
+    description: 'Informative, clear, and instructional tone'
+  },
+  {
+    id: 'inspirational',
+    name: 'Inspirational',
+    description: 'Motivational, uplifting, and encouraging tone'
+  }
+];
+```
+
+**Features:**
+- Single-select radio button cards with visual selection feedback
+- Tone descriptions displayed below tone names for user guidance
+- Same responsive grid layout as PlatformStep (1-3 columns based on screen size)
+- Dark theme styling consistent with existing wizard components
+- Selection validation requiring exactly one tone to enable "Next: Generated" button
+- Radio button styling integrated into card design maintaining card-based UX
+
+**Visual Specifications:**
+- **Card Layout**: Matches PlatformStep design with radio buttons instead of checkboxes
+- **Selection Feedback**: Blue borders and background overlays matching platform cards
+- **Typography**: Tone names in white (text-lg font-medium), descriptions in muted gray (text-sm text-gray-400)
+- **Radio Button**: Positioned top-right corner with blue accent styling
+- **Hover States**: Same hover effects as platform cards for consistency
+
+**Selection Handling:**
+```jsx
+const handleToneSelection = (toneId) => {
+  onUpdate({ selectedTone: toneId });
+};
+```
+
+**Usage:**
+```jsx
+import ToneStep from './components/caption-generator/steps/ToneStep';
+<ToneStep
+  data={formData}
+  onUpdate={updateFormData}
+/>
+```
+
+**Validation Logic:**
+- Step is valid when `selectedTone && selectedTone.length > 0`
+- Used in `CaptionGenerator.jsx` step validation for navigation control
+- Single-select pattern ensures only one tone can be selected at a time
+
+**Visual Components:**
+- Tone cards with radio buttons, tone names, and descriptions
+- Selection indicators with blue borders and background overlays matching platform cards
+- Responsive grid layout with mobile-optimized spacing
+- Radio button styling integrated seamlessly into card design
+
 ##### StepNavigation (`src/components/caption-generator/components/StepNavigation.jsx`)
 Navigation component for wizard step control with validation-based enabling.
 
@@ -514,7 +605,7 @@ import StepIndicator from './components/caption-generator/components/StepIndicat
 - WordPress shortcode: `includes/shortcodes/class-rwp-cct-caption-generator-shortcode.php`
 - React initialization: `src/caption-generator-init.js`
 
-**Implementation:** Steps 1-2 complete, Steps 3-4 pending development
+**Implementation:** Steps 1-3 complete, Step 4 pending development
 
 #### StyleGuide (WordPress Shortcode)
 Comprehensive dark theme style guide for Elementor and external tool reference.

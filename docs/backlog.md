@@ -14,8 +14,8 @@
 ## Active Tasks
 
 ### High Priority
-- **Caption Generator Steps 3-4** (Category: Feature)
-  - Implement tone selection and caption generation steps
+- **Caption Generator Step 4** (Category: Feature)
+  - Implement caption generation step with AI integration
   - Complete the 4-step wizard flow with API integration
 
 - **React component library expansion** (Category: Feature)
@@ -41,6 +41,36 @@
 ## Completed Tasks
 
 ### Recent Completions
+- **✅ Caption Generator Step 3** (Priority: High, Category: Feature)
+  - **Implementation**: Complete Step 3 of 4-step caption generator wizard with single-select tone selection using radio button cards
+  - **Technical Details**:
+    - Created `ToneStep.jsx` component with 5 tone options: Professional, Casual, Creative, Educational, Inspirational
+    - Implemented single-select radio button interface with tone cards matching PlatformStep visual design
+    - Built descriptive tone cards showing tone names and descriptions for context
+    - Integrated radio button selection with visual card selection feedback and hover effects
+    - Added tone validation requiring exactly one tone selected to proceed to caption generation
+  - **Components Created**:
+    - `src/components/caption-generator/steps/ToneStep.jsx` - Single-select tone selection with radio button cards
+  - **Tone Data Structure**:
+    - Professional: Business-focused, formal, and authoritative tone
+    - Casual: Friendly, conversational, and approachable tone
+    - Creative: Fun, playful, and imaginative tone
+    - Educational: Informative, clear, and instructional tone
+    - Inspirational: Motivational, uplifting, and encouraging tone
+  - **Features**:
+    - Single-select radio button cards with visual selection feedback (border, background changes)
+    - Tone descriptions displayed below tone names for user guidance
+    - Same responsive grid layout as PlatformStep (1-3 columns based on screen size)
+    - Dark theme styling consistent with existing wizard components
+    - Selection validation requiring exactly one tone to enable "Next: Generated" button
+    - Radio button styling integrated into card design maintaining card-based UX
+  - **Integration**:
+    - Extended `formData.selectedTone` string field to store selected tone ID
+    - Updated `CaptionGenerator.jsx` step validation for tone selection requirement
+    - Step navigation correctly shows "Next: Generated" button text from Step 3
+    - Maintained existing component patterns and state management architecture
+  - **Usage**: Step 3 loads when user completes Step 2 platform selection and proceeds to tone selection
+  - **Result**: Complete tone selection interface ready for final caption generation step
 - **✅ Caption Generator Step 2** (Priority: High, Category: Feature)
   - **Implementation**: Complete Step 2 of 4-step caption generator wizard with multi-select platform selection and character limit display
   - **Technical Details**:
