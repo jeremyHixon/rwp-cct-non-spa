@@ -104,7 +104,7 @@ const HeaderUserElement = ({ container }) => {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'administrator':
-        return 'bg-red-600 text-white';
+        return 'bg-gray-700 text-gray-200';
       case 'editor':
         return 'bg-purple-600 text-white';
       case 'author':
@@ -146,7 +146,7 @@ const HeaderUserElement = ({ container }) => {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm transition-colors"
+          className="flex items-center gap-1 px-3 py-1 border border-gray-500 text-gray-300 hover:bg-gray-700 hover:border-gray-400 rounded-md text-sm transition-colors"
           title="Logout"
         >
           <LogOut className="w-4 h-4" />
