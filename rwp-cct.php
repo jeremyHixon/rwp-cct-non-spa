@@ -92,6 +92,10 @@ class RWP_CCT_Plugin {
         require_once RWP_CCT_PLUGIN_DIR . 'includes/frontend/class-shortcodes.php';
         new RWP_CCT_Shortcodes();
 
+        // Load global auth class
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/frontend/class-global-auth.php';
+        new RWP_CCT_Global_Auth();
+
         // Load API classes
         require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-jwt-handler.php';
         require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-auth-api.php';

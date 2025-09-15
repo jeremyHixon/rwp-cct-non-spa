@@ -7,6 +7,7 @@ module.exports = (env, argv) => {
   return {
     entry: {
       main: './src/index.js',
+      'global-auth': './src/global-auth.js',
     },
     output: {
       path: path.resolve(__dirname, 'assets/dist'),

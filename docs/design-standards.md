@@ -104,51 +104,242 @@
 
 ## Authentication UI Patterns
 
-### Login/Register Form Design
-- **Container**: Centered form with maximum 400px width for optimal readability
-- **Tab navigation**: Clear visual distinction between login and registration modes
-- **Form fields**: Consistent spacing (mb-4) between form groups
+### Conversion-Optimized Form Design
+- **Container**: Centered modal with maximum 400px width for optimal readability
+- **Tab navigation**: Three-tab system (Login, Register, Reset) with clear visual distinction
+- **Form fields**: Minimal field requirements to reduce registration friction
 - **Input styling**: Dark theme with focus ring using primary colors
 - **Button hierarchy**: Primary button for main action, secondary for alternatives
-- **Password fields**: Include visibility toggle with eye icon
+- **Messaging**: Value proposition messaging to encourage conversion
 
-### Error Message Display
-- **Color scheme**: Use red-400 for error text against dark backgrounds
-- **Positioning**: Display errors directly below relevant form fields
-- **Animation**: Subtle fade-in animation for error appearance
-- **Icon usage**: Include warning icon for visual emphasis
-- **Message tone**: Clear, actionable language without technical jargon
+### Simplified Registration Pattern
+- **Field requirements**: Email and password only (no name fields, no password confirmation)
+- **Password validation**: 8+ characters with letter + number requirement
+- **Username generation**: Auto-generated `user_` + MD5 hash on backend
+- **User role**: Default subscriber role with immediate activation
+- **Terms acceptance**: Inline text below form (no required checkbox)
+- **Value proposition**: "Start creating amazing content today" messaging
 
-### Loading States
-- **Button loading**: Replace button text with spinner during authentication
-- **Form disabling**: Disable all form inputs during submission
-- **Visual feedback**: Use primary color for loading spinners
-- **Timing**: Show loading state immediately on form submission
-- **Accessibility**: Include screen reader text for loading states
+### Streamlined Login Pattern
+- **Field requirements**: Email and password only (email-based authentication)
+- **Remember me**: Functional checkbox with localStorage persistence
+- **Forgot password**: Direct link to reset tab (no separate page)
+- **Cross-form navigation**: Easy switching between login and registration
 
-### Success/Confirmation Messaging
-- **Color scheme**: Use accent colors (green-400) for success states
-- **Positioning**: Replace form content or display as overlay
-- **Icons**: Checkmark icon for successful operations
-- **Auto-redirect**: Brief success message before redirecting (2-3 seconds)
-- **User feedback**: Clear indication of what happened and next steps
+### Password Reset Pattern
+- **Field requirements**: Email only for maximum simplicity
+- **Navigation**: Back to login button for easy return
+- **Success handling**: Clear message without modal closure (user reads confirmation)
+- **No complexity**: Simple email-based reset without multi-step workflows
 
-### Password Strength Indicators
-- **Visual design**: Horizontal bar with color-coded strength levels
-- **Color progression**: Red (weak) → Yellow (fair) → Green (strong)
-- **Real-time feedback**: Update strength indicator as user types
-- **Requirements list**: Show specific requirements with check/x indicators
-- **Positioning**: Below password field, above submit button
+### Real-Time Password Strength System
+- **Visual design**: 5-bar horizontal strength meter with color coding
+- **Color progression**:
+  - Gray (no input) → Red (very weak/weak) → Yellow (fair) → Blue (good) → Green (strong)
+- **Real-time feedback**: Updates as user types with immediate visual response
+- **Requirement feedback**: Displays specific missing requirements inline
+- **Fallback system**: Client-side calculation if API unavailable
+- **Positioning**: Below password field with clear visual hierarchy
+
+### Enhanced Loading States
+- **Button loading**: Spinner with contextual text ("Creating Account...", "Signing In...", "Sending Email...")
+- **Form disabling**: All inputs disabled during submission to prevent double-submission
+- **Visual feedback**: Primary blue color for loading spinners
+- **State management**: Loading state maintained until API response received
+- **Accessibility**: Screen reader announcements for state changes
+
+### Success Flow Optimization
+- **Registration success**: Automatic login + JWT storage + modal close + header update
+- **Login success**: JWT storage + modal close + header update (no redirect)
+- **Reset success**: Email confirmation message (modal stays open for user to read)
+- **Auto-redirect timing**: 1.5 seconds for account creation/login success
+- **Global state sync**: `rwp-cct-auth-success` events for cross-component updates
+
+### Error Handling Patterns
+- **Inline validation**: Errors appear below relevant fields with red-400 color
+- **API error display**: Server errors shown in prominent error box with alert icon
+- **Network errors**: Fallback messages for connection issues
+- **Validation feedback**: Real-time clearing of errors when user starts typing
+- **User-friendly language**: Clear, actionable messages without technical jargon
+
+### JWT Token Management
+- **Storage strategy**: localStorage for token persistence across sessions
+- **Remember me implementation**: Separate localStorage flag for user preference
+- **Auto-loading**: Remember me preference loaded on modal open
+- **Security considerations**: Tokens handled securely with proper expiration
+- **Cross-session sync**: Token availability updates global authentication state
 
 ### Authentication States
-- **Unauthenticated**: Show login/register options
-- **Loading**: Display spinner and disable interactions
-- **Authenticated**: Show user info and logout option
-- **Error**: Display error message with retry option
-- **Expired session**: Prompt for re-authentication with context
+- **Unauthenticated**: Login/register modal accessible via header buttons
+- **Loading**: Form submission with disabled inputs and loading feedback
+- **Authenticated**: Header shows user info with logout option, modal closes
+- **Error**: Inline error messages with clear recovery paths
+- **Token verification**: Background verification for persistent authentication
+
+## React Component Stability Patterns
+
+### Component Isolation for Performance
+**Critical principle**: Prevent re-render cascades by isolating component responsibilities and state management.
+
+#### State Isolation Pattern
+**Problem**: Parent components managing both UI state and form state cause excessive re-renders.
+
+**Solution**: Use React.memo and separate form state into individual components.
+
+```jsx
+// ❌ Anti-pattern: Form state in parent causes re-render cascade
+const AuthModal = ({ container }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [formData, setFormData] = useState({ email: '', password: '' }); // Triggers re-renders
+
+  const handleInputChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value })); // Re-renders entire modal
+  };
+
+  return (
+    <div>
+      <input onChange={handleInputChange} value={formData.email} />
+    </div>
+  );
+};
+
+// ✅ Correct pattern: Isolated form components with React.memo
+const LoginForm = React.memo(({ onSubmit, isLoading }) => {
+  const [formData, setFormData] = useState({ email: '', password: '' }); // Isolated state
+
+  const handleInputChange = useCallback((e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value })); // Only re-renders this component
+  }, []);
+
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    onSubmit(formData, 'login'); // Callback to parent
+  }, [formData, onSubmit]);
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input onChange={handleInputChange} value={formData.email} />
+    </form>
+  );
+});
+
+const AuthModal = React.memo(({ container }) => {
+  const [isVisible, setIsVisible] = useState(false); // Only UI state
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFormSubmit = useCallback(async (formData, formType) => {
+    // Handle submission without affecting form components
+    setIsLoading(true);
+    // API call logic
+    setIsLoading(false);
+  }, []);
+
+  return (
+    <div>
+      <LoginForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+    </div>
+  );
+});
+```
+
+#### Key Principles for Component Isolation
+1. **State Separation**: Form data state belongs in form components, UI state in parent
+2. **React.memo**: Apply to all form components to prevent unnecessary re-renders
+3. **Callback Communication**: Use callbacks for parent-child communication
+4. **Minimal Parent State**: Parent only manages visibility, loading, error states
+
+#### Benefits of Component Isolation
+- **Performance**: Eliminates excessive re-renders during form input
+- **Focus Stability**: Input focus remains stable during typing
+- **Maintainability**: Clear separation of concerns between components
+- **Testability**: Individual form components can be tested in isolation
+
+### Input Focus Stability Guidelines
+**Critical requirement**: Form inputs must maintain focus during typing to ensure usable authentication.
+
+#### React Component Patterns for Stable Forms
+1. **Memoized Form Components**
+   ```jsx
+   // Correct: Form component memoized to prevent recreation
+   const LoginForm = useCallback(() => (
+     <form>
+       {/* form content */}
+     </form>
+   ), [formData.email, formData.password, handleInputChange, showPassword, isLoading]);
+
+   // Incorrect: Form component recreated on every render
+   const LoginForm = () => (
+     <form>
+       {/* form content */}
+     </form>
+   );
+   ```
+
+2. **Stable Input Keys**
+   ```jsx
+   // Correct: Unique keys prevent React from recreating DOM elements
+   <input key="login-email" type="email" name="email" />
+   <input key="register-password" type="password" name="password" />
+
+   // Incorrect: No keys allow React to recreate inputs during re-renders
+   <input type="email" name="email" />
+   ```
+
+3. **Optimized State Updates**
+   ```jsx
+   // Correct: Functional setState prevents dependency issues
+   const handleInputChange = useCallback((e) => {
+     const { name, value } = e.target;
+     setFormData(prevData => ({
+       ...prevData,
+       [name]: value
+     }));
+   }, []);
+
+   // Incorrect: Direct state updates can cause excessive re-renders
+   const handleInputChange = (e) => {
+     setFormData({
+       ...formData,
+       [e.target.name]: e.target.value
+     });
+   };
+   ```
+
+4. **Debounced Expensive Operations**
+   ```jsx
+   // Correct: Debounce API calls and expensive calculations
+   if (name === 'password' && activeForm === 'register') {
+     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+     timeoutRef.current = setTimeout(() => {
+       checkPasswordStrength(value);
+     }, 300);
+   }
+
+   // Incorrect: Immediate API calls on every keystroke
+   if (name === 'password') {
+     checkPasswordStrength(value);
+   }
+   ```
+
+#### Input Focus Anti-Patterns (Avoid)
+- Defining form components inside parent component render
+- Missing React keys on form inputs
+- Multiple state updates in single onChange handler
+- Immediate API calls without debouncing
+- Direct formData object mutations
+
+#### Focus Stability Checklist
+- [ ] Form components use `useCallback` with proper dependencies
+- [ ] All inputs have unique, stable `key` attributes
+- [ ] State updates use functional setState pattern
+- [ ] Expensive operations (API calls) are debounced
+- [ ] Timeout cleanup in component unmount
+- [ ] No unnecessary re-renders during typing
 
 ## UI Principles
 - Functional over decorative
 - Consistent component spacing
 - Clear visual hierarchy
 - Accessibility through contrast and legibility
+- **Input focus stability** - Forms must be usable for typing

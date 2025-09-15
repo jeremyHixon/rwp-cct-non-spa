@@ -58,44 +58,83 @@ import AuthProvider from './contexts/AuthProvider';
 - `loading`: Authentication loading state
 - `isAuthenticated`: Boolean authentication status
 
-#### LoginForm (React Component)
-*[Planned Component]* Standalone login form component.
+#### AuthModal (Production Component)
+Modal-based authentication system with JWT integration and conversion-optimized forms.
+
+**Shortcode:** `[rwp_cct_user_header]` for header integration
 
 **Features:**
-- Email and password authentication
-- Integration with JWT API endpoints
-- Form validation and error handling
-- Loading states and success feedback
+- Three streamlined authentication forms: Login, Registration, Password Reset
+- Tab-based navigation with smooth transitions
+- Real-time password strength indicator with 5-bar visual meter
+- Functional remember me checkbox with localStorage persistence
+- Simplified registration (email + password only, no confirmation fields)
+- Automatic JWT token storage and user state management
+- Conversion-optimized UI with minimal friction
+- Mobile-responsive dark theme design
+- ESC key and backdrop click handling
 
-**Props:**
-- `onSuccess`: Callback function for successful login
-- `redirectTo`: URL to redirect after login
-- `className`: Additional CSS classes
+**Form Specifications:**
+
+**Registration Form:**
+- Fields: Email, Password (8+ characters, letter + number required)
+- No first name, last name, or confirm password fields
+- Auto-generated username: `user_` + MD5 hash
+- Default role: Subscriber
+- Immediate activation (no email verification)
+- Password strength indicator with real-time feedback
+- Visual progress: 5-bar strength meter with color coding
+- Inline feedback: Displays specific requirements (length, letters, numbers)
+
+**Login Form:**
+- Fields: Email, Password, Remember Me checkbox
+- Email-based authentication (not username)
+- Remember me preference persisted in localStorage
+- Forgot password link to reset tab
+
+**Password Reset Form:**
+- Field: Email only
+- Back to login navigation
+- Simple message delivery (no complex workflows)
+
+**API Integration:**
+- Uses `/auth/register`, `/auth/login`, `/auth/reset` endpoints
+- Automatic JWT token storage in localStorage
+- Success state management with modal close and header updates
+- Comprehensive error handling with inline validation
+- Loading states with button spinners
 
 **Usage:**
 ```jsx
-import LoginForm from './components/auth/LoginForm';
-<LoginForm onSuccess={handleLogin} redirectTo="/dashboard" />
+import AuthModal from './components/auth/AuthModal';
+<AuthModal container={modalContainer} />
 ```
 
-#### RegisterForm (React Component)
-*[Planned Component]* User registration form component.
+**Implementation:** `src/components/auth/AuthModal.jsx`
 
-**Features:**
-- Email and password registration
-- Password strength validation
-- Terms of service acceptance
-- Automatic login after registration
+**Success Flow:**
+1. Registration/Login → Auto JWT storage → Header update → Modal close
+2. Password reset → Email sent message (no modal close)
+3. All forms dispatch `rwp-cct-auth-success` events for global state sync
 
-**Props:**
-- `onSuccess`: Callback function for successful registration
-- `requireTerms`: Boolean to require terms acceptance
-- `className`: Additional CSS classes
-
-**Usage:**
+**Password Strength Implementation:**
 ```jsx
-import RegisterForm from './components/auth/RegisterForm';
-<RegisterForm onSuccess={handleRegister} requireTerms={true} />
+// Client-side fallback strength calculation
+const getClientSidePasswordStrength = (password) => {
+  let score = 0;
+  const feedback = [];
+
+  if (password.length >= 8) score++;
+  else feedback.push('Use at least 8 characters');
+
+  if (/[a-z]/.test(password)) score++;
+  else feedback.push('Include lowercase letters');
+
+  // Additional checks for uppercase, numbers, special chars
+
+  const levels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+  return { score, level: levels[Math.min(score, 4)], feedback };
+};
 ```
 
 #### AuthGate (React Component)
@@ -242,24 +281,233 @@ import AuthDemo from './components/auth/AuthDemo';
 
 #### Form Components (Reusable Patterns)
 
-**Login Form**
-- Email and password fields
-- Remember me checkbox
-- Forgot password link
-- Sign up redirect
+**Login Form Pattern (Simplified)**
+- Email and password fields only
+- Remember me checkbox with localStorage persistence
+- Forgot password link to reset tab
+- Sign up redirect link
 
-**Registration Form**
-- First name and last name fields
-- Email and password confirmation
-- Terms of service acceptance
-- Grid layout for name fields
+**Registration Form Pattern (Conversion-Optimized)**
+- Email and password fields only (no name fields)
+- Real-time password strength indicator
+- No password confirmation field
+- Simplified terms acceptance (inline text)
+- Auto-generated username on backend
+- Immediate activation workflow
 
-**Password Reset Form**
-- Email field for reset instructions
+**Password Reset Form Pattern**
+- Email field only
 - Back to login navigation
 - Simplified single-purpose design
+- Clear success messaging without modal closure
+
+### Component Isolation Patterns
+
+#### Preventing Re-render Cascades
+
+**Problem**: Parent components that manage both UI state and form state cause excessive re-renders, leading to poor performance and input focus loss.
+
+**Solution**: Component isolation using React.memo and state separation.
+
+**Pattern Implementation**:
+
+```jsx
+// ❌ Bad: Form state in parent component causes re-renders
+const ParentModal = ({ container }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [formData, setFormData] = useState({ email: '', password: '' }); // Causes re-renders
+
+  const handleInputChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value })); // Re-renders parent
+  };
+
+  return (
+    <div>
+      <input onChange={handleInputChange} value={formData.email} />
+    </div>
+  );
+};
+
+// ✅ Good: Isolated form components with React.memo
+const LoginForm = React.memo(({ onSubmit, isLoading }) => {
+  const [formData, setFormData] = useState({ email: '', password: '' }); // Isolated state
+
+  const handleInputChange = useCallback((e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value })); // Only re-renders this component
+  }, []);
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData, 'login'); }}>
+      <input onChange={handleInputChange} value={formData.email} />
+    </form>
+  );
+});
+
+const ParentModal = React.memo(({ container }) => {
+  const [isVisible, setIsVisible] = useState(false); // Only UI state
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFormSubmit = useCallback(async (formData, formType) => {
+    // Handle submission without re-rendering form components
+  }, []);
+
+  return (
+    <div>
+      <LoginForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+    </div>
+  );
+});
+```
+
+**Key Principles**:
+1. **State Isolation**: Form data state stays within form components
+2. **Callback Communication**: Use callbacks to communicate between parent and child
+3. **React.memo**: Prevent unnecessary re-renders of stable components
+4. **Minimal Parent State**: Parent only manages UI state (visibility, loading, errors)
+
+**Benefits**:
+- Input focus remains stable during typing
+- Improved performance with fewer re-renders
+- Better component separation of concerns
+- Easier debugging and testing
+
+### Input Focus Troubleshooting
+
+#### Input Focus Loss in Forms
+
+**Symptom**: Form inputs lose focus after typing one character, requiring users to click back into field for each character typed.
+
+**Root Causes and Solutions**:
+
+1. **React Component Re-rendering**
+   - **Cause**: Form components defined inside parent component get recreated on every re-render
+   - **Solution**: Use `useCallback` to memoize form components
+   ```jsx
+   const LoginForm = useCallback(() => (
+     // form JSX
+   ), [formData.email, formData.password, handleInputChange, showPassword, isLoading]);
+   ```
+
+2. **Missing Stable React Keys**
+   - **Cause**: React recreates DOM elements without stable keys during re-renders
+   - **Solution**: Add unique keys to all form inputs
+   ```jsx
+   <input key="login-email" type="email" name="email" />
+   <input key="login-password" type="password" name="password" />
+   <input key="register-email" type="email" name="email" />
+   <input key="register-password" type="password" name="password" />
+   <input key="reset-email" type="email" name="email" />
+   ```
+
+3. **Excessive State Updates**
+   - **Cause**: Multiple state updates in onChange handlers trigger frequent re-renders
+   - **Solution**: Optimize state updates and use functional setState
+   ```jsx
+   const handleInputChange = useCallback((e) => {
+     const { name, value, type, checked } = e.target;
+     const newValue = type === 'checkbox' ? checked : value;
+
+     // Use functional setState to prevent unnecessary re-renders
+     setFormData(prevData => ({
+       ...prevData,
+       [name]: newValue
+     }));
+
+     // Conditional state updates
+     if (error) setError('');
+   }, [error, activeForm]);
+   ```
+
+4. **Debounce Expensive Operations**
+   - **Cause**: Real-time password strength checking triggers re-renders on every keystroke
+   - **Solution**: Debounce API calls and expensive operations
+   ```jsx
+   // Debounced password strength check
+   if (name === 'password' && activeForm === 'register') {
+     if (passwordStrengthTimeoutRef.current) {
+       clearTimeout(passwordStrengthTimeoutRef.current);
+     }
+
+     if (value) {
+       passwordStrengthTimeoutRef.current = setTimeout(() => {
+         checkPasswordStrength(value);
+       }, 300);
+     }
+   }
+   ```
+
+**Best Practices for Stable Forms**:
+- Always memoize form components with `useCallback`
+- Provide stable `key` props for all form inputs
+- Use functional state updates to prevent dependency issues
+- Debounce expensive operations (API calls, complex calculations)
+- Clean up timeouts and intervals in component cleanup
+
+### Modal Display Troubleshooting
+
+#### Common Issues and Solutions
+
+**Modal Not Visible Despite DOM Creation**
+- **Symptom**: Modal DOM elements are created but not visible when header buttons are clicked
+- **Root Cause**: DOM structure mismatch between PHP-generated container and React component wrapper
+- **Solution**: React component should manipulate parent container classes instead of creating own modal wrapper
+
+**DOM Structure Requirements**
+```html
+<!-- Correct Structure -->
+<div class="rwp-cct-auth-modal rwp-cct-modal-visible"> <!-- PHP container, classes controlled by React -->
+  <div class="modal-content"> <!-- React content -->
+    <!-- form content -->
+  </div>
+</div>
+
+<!-- Incorrect Structure (causes hidden modal) -->
+<div class="rwp-cct-auth-modal rwp-cct-modal-hidden"> <!-- PHP container, always hidden -->
+  <div class="rwp-cct-auth-modal rwp-cct-modal-visible"> <!-- React wrapper, visible but parent is hidden -->
+    <div class="modal-content">
+      <!-- form content -->
+    </div>
+  </div>
+</div>
+```
+
+**CSS Class Management**
+- Use `useEffect` to toggle visibility classes on parent container:
+```jsx
+useEffect(() => {
+  if (container) {
+    if (isVisible) {
+      container.classList.remove('rwp-cct-modal-hidden');
+      container.classList.add('rwp-cct-modal-visible');
+    } else {
+      container.classList.remove('rwp-cct-modal-visible');
+      container.classList.add('rwp-cct-modal-hidden');
+    }
+  }
+}, [isVisible, container]);
+```
+
+**Key CSS Classes**
+- `.rwp-cct-modal-hidden`: `display: none !important` - hides modal
+- `.rwp-cct-modal-visible`: `display: flex !important` - shows modal with flexbox centering
+- `.rwp-cct-auth-modal`: Fixed positioning, full viewport coverage, dark overlay
+
+**Event Flow Debugging**
+1. Header buttons dispatch `rwp-cct-open-auth-modal` custom event
+2. Modal component listens for event and updates `isVisible` state
+3. `useEffect` toggles CSS classes on parent container
+4. CSS class changes control modal visibility
+
+**Debugging Checklist**
+- [ ] Verify custom event is dispatched from header buttons
+- [ ] Check that modal component receives the event
+- [ ] Confirm `isVisible` state updates correctly
+- [ ] Ensure parent container classes are being toggled
+- [ ] Validate CSS classes exist and have proper styles
+- [ ] Test that parent container becomes visible (not just child elements)
 
 ## Component Guidelines
 - Document only major/significant components
 - Library components (inputs, buttons, etc.) are documented by their respective libraries
 - Focus on custom components that are specific to Content Creator Tools
+- Include troubleshooting notes for complex integration patterns
