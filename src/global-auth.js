@@ -21,11 +21,4 @@ document.addEventListener('DOMContentLoaded', function() {
     root.render(<AuthModal container={container} />);
   });
 
-  // Log initialization for debugging
-  if (window.console) {
-    console.log('RWP CCT Global Auth initialized:', {
-      headerElements: headerContainers.length,
-      modalElements: modalContainers.length
-    });
-  }
 });

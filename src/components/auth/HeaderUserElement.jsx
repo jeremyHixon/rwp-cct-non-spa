@@ -1,20 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User, LogOut, Mail, Shield, LogIn, UserPlus } from 'lucide-react';
 
 const HeaderUserElement = ({ container }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = useCallback(async () => {
+    // Prevent multiple logout calls
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      // Clear JWT token
+      localStorage.removeItem('rwp_cct_token');
+      localStorage.removeItem('rwp_cct_user_role');
+      localStorage.removeItem('rwp_cct_user_email');
+
+      // If using WordPress session, redirect to logout URL
+      if (window.rwpCctGlobalAuth.currentUser?.isLoggedIn) {
+        window.location.href = window.rwpCctGlobalAuth.logoutUrl;
+        return;
+      }
+
+      setUser(null);
+
+      // Dispatch logout event for status updates
+      const logoutEvent = new CustomEvent('rwp-cct-auth-logout', {
+        detail: { timestamp: Date.now() }
+      });
+      document.dispatchEvent(logoutEvent);
+
+
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Reset logout flag after delay
+      setTimeout(() => setIsLoggingOut(false), 1000);
+    }
+  }, [isLoggingOut]);
 
   useEffect(() => {
     checkAuthStatus();
 
     // Listen for auth state changes
     window.addEventListener('rwp-cct-auth-success', handleAuthSuccess);
-    window.addEventListener('rwp-cct-auth-logout', handleLogout);
 
     return () => {
       window.removeEventListener('rwp-cct-auth-success', handleAuthSuccess);
-      window.removeEventListener('rwp-cct-auth-logout', handleLogout);
     };
   }, []);
 
@@ -69,35 +105,12 @@ const HeaderUserElement = ({ container }) => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      // Clear JWT token
-      localStorage.removeItem('rwp_cct_token');
-
-      // If using WordPress session, redirect to logout URL
-      if (window.rwpCctGlobalAuth.currentUser?.isLoggedIn) {
-        window.location.href = window.rwpCctGlobalAuth.logoutUrl;
-        return;
-      }
-
-      setUser(null);
-
-      // Dispatch logout event
-      window.dispatchEvent(new CustomEvent('rwp-cct-auth-logout'));
-
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   const openModal = (formType = 'login') => {
-    console.log('openModal called with formType:', formType);
-
     const event = new CustomEvent('rwp-cct-open-auth-modal', {
       detail: { formType }
     });
 
-    console.log('Dispatching event:', event);
     window.dispatchEvent(event);
   };
 
@@ -171,20 +184,14 @@ const HeaderUserElement = ({ container }) => {
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={(e) => {
-          console.log('Login button clicked', e);
-          openModal('login');
-        }}
+        onClick={() => openModal('login')}
         className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-colors"
       >
         <LogIn className="w-4 h-4" />
         <span>Login</span>
       </button>
       <button
-        onClick={(e) => {
-          console.log('Register button clicked', e);
-          openModal('register');
-        }}
+        onClick={() => openModal('register')}
         className="flex items-center gap-1 px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-sm transition-colors"
       >
         <UserPlus className="w-4 h-4" />

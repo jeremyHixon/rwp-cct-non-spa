@@ -124,7 +124,6 @@ const ProtectedContent = React.memo(({
                   className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
                   onClick={() => {
                     // TODO: Add upgrade flow
-                    console.log('Upgrade flow not implemented yet');
                   }}
                 >
                   Upgrade

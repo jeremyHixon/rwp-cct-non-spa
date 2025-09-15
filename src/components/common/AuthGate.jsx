@@ -118,7 +118,6 @@ const AuthGate = React.memo(({
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors"
           onClick={() => {
             // TODO: Add upgrade flow
-            console.log('Upgrade flow not implemented yet');
           }}
         >
           Upgrade to Premium

@@ -22,7 +22,6 @@ const AuthDemo = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Demo only - no actual functionality
-    console.log(`${activeForm} form submitted:`, formData);
   };
 
   const FormTabs = () => (

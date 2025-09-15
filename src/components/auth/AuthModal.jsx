@@ -414,7 +414,6 @@ const ResetForm = React.memo(({ onSubmit, isLoading, error, success }) => {
 
 // Main AuthModal component - only manages visibility and tab state
 const AuthModal = React.memo(({ container }) => {
-  console.log('🟢 AuthModal render (should only happen on visibility/tab changes)');
 
   const [isVisible, setIsVisible] = useState(false);
   const [activeForm, setActiveForm] = useState('login');
@@ -449,18 +448,13 @@ const AuthModal = React.memo(({ container }) => {
   }, [isVisible, container]);
 
   const handleOpenModal = useCallback((event) => {
-    console.log('AuthModal: handleOpenModal called', event);
-
     const { formType } = event.detail || {};
-    console.log('AuthModal: formType from event:', formType);
 
     if (formType) {
       setActiveForm(formType);
     }
     setIsVisible(true);
     resetForm();
-
-    console.log('AuthModal: Modal should now be visible, isVisible:', true);
   }, []);
 
   const handleKeyDown = useCallback((event) => {

@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const root = createRoot(container);
         root.render(<ProtectedDemo />);
 
-        updateAuthStatus();
+        // Initial status update after component renders
+        setTimeout(updateAuthStatus, 100);
 
         document.addEventListener('rwp-cct-auth-success', updateAuthStatus);
         document.addEventListener('rwp-cct-auth-logout', updateAuthStatus);
@@ -21,19 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function updateAuthStatus() {
   const statusElement = document.getElementById('rwp-cct-current-status');
-  if (statusElement) {
-    const token = localStorage.getItem('rwp_cct_jwt_token');
-    const userRole = localStorage.getItem('rwp_cct_user_role') || 'guest';
-    const isAuthenticated = !!token;
 
-    statusElement.innerHTML = `
-      <div class="space-y-1">
-        <div><strong>Authenticated:</strong> ${isAuthenticated ? 'Yes' : 'No'}</div>
-        <div><strong>Role:</strong> ${getRoleDisplayName(userRole)}</div>
-        <div><strong>Access Level:</strong> ${getAccessLevel(userRole)}</div>
-      </div>
-    `;
+  if (!statusElement) {
+    return;
   }
+
+  // Check both token keys for compatibility
+  const token = localStorage.getItem('rwp_cct_token') || localStorage.getItem('rwp_cct_jwt_token');
+  const userRole = localStorage.getItem('rwp_cct_user_role') || 'guest';
+  const isAuthenticated = !!token;
+
+  statusElement.innerHTML = `
+    <div class="space-y-1">
+      <div><strong>Authenticated:</strong> ${isAuthenticated ? 'Yes' : 'No'}</div>
+      <div><strong>Role:</strong> ${getRoleDisplayName(userRole)}</div>
+      <div><strong>Access Level:</strong> ${getAccessLevel(userRole)}</div>
+    </div>
+  `;
 }
 
 function getRoleDisplayName(role) {
