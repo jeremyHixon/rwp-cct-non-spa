@@ -4,6 +4,10 @@
 - Follow WordPress Coding Standards for ALL PHP code
 - Use `rwp_cct_` prefix for all WordPress integration points (hooks, functions, database tables)
 - Maintain consistency across all PHP files, not just WordPress-specific code
+- Plugin class names: Use `RWP_CCT_` prefix (e.g., `RWP_CCT_Plugin`)
+- Constants: Use `RWP_CCT_` prefix (e.g., `RWP_CCT_VERSION`)
+- Hook names: Use `rwp_cct_` prefix (e.g., `rwp_cct_init`)
+- Database tables: Use `rwp_cct_` prefix (e.g., `{$wpdb->prefix}rwp_cct_analytics`)
 
 ## React/JavaScript Standards
 - Use functional components only
