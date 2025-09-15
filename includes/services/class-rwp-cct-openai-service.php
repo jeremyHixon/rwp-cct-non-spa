@@ -124,9 +124,9 @@ class RWP_CCT_OpenAI_Service {
      * @return string Generated prompt
      */
     private function build_prompt($params, $max_char_limit) {
-        $description = isset($params['description']) ? trim($params['description']) : '';
+        $description = isset($params['description']) && $params['description'] !== null ? trim($params['description']) : '';
         $tone = $params['tone'];
-        $url = isset($params['url']) ? trim($params['url']) : '';
+        $url = isset($params['url']) && $params['url'] !== null ? trim($params['url']) : '';
         $has_image = !empty($params['image']);
 
         // Build base prompt based on content source
@@ -194,10 +194,18 @@ class RWP_CCT_OpenAI_Service {
         // Check user's subscription or role
         $current_user = wp_get_current_user();
 
+        // Debug logging
+        $has_manage_cap = current_user_can('manage_options');
+        $has_premium_role = in_array('premium_user', $current_user->roles) || in_array('rwp_cct_premium', $current_user->roles);
+        $has_premium_meta = get_user_meta($current_user->ID, 'rwp_cct_premium_access', true);
+
+        error_log("RWP CCT Premium Check - User ID: {$current_user->ID}, Roles: " . implode(',', $current_user->roles) .
+                  ", Has manage_options: " . ($has_manage_cap ? 'yes' : 'no') .
+                  ", Has premium_user/rwp_cct_premium role: " . ($has_premium_role ? 'yes' : 'no') .
+                  ", Has premium meta: " . ($has_premium_meta ? 'yes' : 'no'));
+
         // For now, check if user is admin or has specific capability
-        return current_user_can('manage_options') ||
-               in_array('premium_user', $current_user->roles) ||
-               get_user_meta($current_user->ID, 'rwp_cct_premium_access', true);
+        return $has_manage_cap || $has_premium_role || $has_premium_meta;
     }
 
     /**

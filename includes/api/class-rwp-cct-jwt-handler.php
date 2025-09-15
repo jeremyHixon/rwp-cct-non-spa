@@ -178,13 +178,28 @@ class RWP_CCT_JWT_Handler {
      * @return string|null
      */
     public function get_token_from_header() {
-        $headers = getallheaders();
+        $auth_header = null;
 
-        if (isset($headers['Authorization'])) {
-            $auth_header = $headers['Authorization'];
-        } elseif (isset($headers['authorization'])) {
-            $auth_header = $headers['authorization'];
-        } else {
+        // Try multiple ways to get the Authorization header
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            if (isset($headers['Authorization'])) {
+                $auth_header = $headers['Authorization'];
+            } elseif (isset($headers['authorization'])) {
+                $auth_header = $headers['authorization'];
+            }
+        }
+
+        // Fallback to $_SERVER
+        if (!$auth_header) {
+            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+                $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
+            } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+                $auth_header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+            }
+        }
+
+        if (!$auth_header) {
             return null;
         }
 

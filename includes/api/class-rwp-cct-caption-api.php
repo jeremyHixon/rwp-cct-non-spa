@@ -133,37 +133,60 @@ class RWP_CCT_Caption_API {
      * Check authentication using JWT or WordPress session
      *
      * @param WP_REST_Request $request Request object
-     * @return bool True if authenticated
+     * @return bool|WP_Error True if authenticated, WP_Error if not
      */
     public function check_authentication($request) {
-        // First check if user is already logged in via WordPress
+        // Check for JWT token first
+        $token = $this->jwt_handler->get_token_from_header();
+
+        if ($token) {
+            // JWT token authentication
+            $payload = $this->jwt_handler->validate_token($token);
+
+            if (is_wp_error($payload)) {
+                error_log('RWP CCT: JWT validation failed - ' . $payload->get_error_message());
+                return new WP_Error('invalid_jwt', 'Invalid authentication token', array('status' => 401));
+            }
+
+            // Set current user context for JWT users
+            if (isset($payload['user_id'])) {
+                wp_set_current_user($payload['user_id']);
+                error_log('RWP CCT: JWT auth successful for user ID: ' . $payload['user_id']);
+            }
+
+            return true;
+        }
+
+        // Check for WordPress nonce authentication
+        $nonce = null;
+        if (!empty($_SERVER['HTTP_X_WP_NONCE'])) {
+            $nonce = $_SERVER['HTTP_X_WP_NONCE'];
+        } elseif (!empty($request->get_header('X-WP-Nonce'))) {
+            $nonce = $request->get_header('X-WP-Nonce');
+        }
+
+        if ($nonce && wp_verify_nonce($nonce, 'wp_rest')) {
+            // Valid WordPress nonce - check if user is logged in
+            if (is_user_logged_in()) {
+                $current_user = wp_get_current_user();
+                if ($current_user && $current_user->ID > 0) {
+                    // All logged-in users with valid nonce are allowed
+                    return true;
+                }
+            }
+            return new WP_Error('not_logged_in', 'User must be logged in', array('status' => 401));
+        }
+
+        // Check if user is logged in via WordPress session (fallback)
         if (is_user_logged_in()) {
             $current_user = wp_get_current_user();
-            // Allow all logged-in WordPress users to access the API
             if ($current_user && $current_user->ID > 0) {
                 return true;
             }
         }
 
-        // Fallback to JWT token authentication
-        $token = $this->jwt_handler->get_token_from_header();
-
-        if (!$token) {
-            return false;
-        }
-
-        $payload = $this->jwt_handler->validate_token($token);
-
-        if (is_wp_error($payload)) {
-            return false;
-        }
-
-        // Set current user context for JWT users
-        if (isset($payload['user_id'])) {
-            wp_set_current_user($payload['user_id']);
-        }
-
-        return true;
+        error_log('RWP CCT: No valid authentication found - no JWT token, no valid nonce, user not logged in');
+        return new WP_Error('authentication_required', 'Authentication required', array('status' => 401));
     }
 
     /**
@@ -191,9 +214,9 @@ class RWP_CCT_Caption_API {
             }
 
             // Validate that at least one content source is provided (description OR image OR URL)
-            $has_description = !empty(trim($description));
+            $has_description = !empty($description !== null ? trim($description) : '');
             $has_image = !empty($image);
-            $has_url = !empty(trim($url));
+            $has_url = !empty($url !== null ? trim($url) : '');
 
             if (!$has_description && !$has_image && !$has_url) {
                 return new WP_REST_Response(

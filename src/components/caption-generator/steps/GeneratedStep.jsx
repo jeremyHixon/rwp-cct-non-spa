@@ -33,7 +33,7 @@ const GeneratedStep = ({ data, onStartOver }) => {
 
   // Get stored JWT token
   const getStoredToken = () => {
-    return localStorage.getItem('rwp_cct_jwt_token') || sessionStorage.getItem('rwp_cct_jwt_token');
+    return localStorage.getItem('rwp_cct_token') || localStorage.getItem('rwp_cct_jwt_token') || sessionStorage.getItem('rwp_cct_jwt_token');
   };
 
   // Generate captions using API
@@ -203,9 +203,9 @@ const GeneratedStep = ({ data, onStartOver }) => {
         {captions.map((caption, index) => (
           <div
             key={index}
-            className="bg-gray-800 border border-gray-600 rounded-lg p-6 hover:border-gray-500 transition-colors"
+            className="bg-gray-800 border border-gray-600 rounded-lg p-6 hover:border-gray-500 transition-colors flex flex-col h-full"
           >
-            <div className="mb-4">
+            <div className="flex-grow">
               <div className="flex justify-between items-start mb-3">
                 <h4 className="text-lg font-semibold text-white">Caption {index + 1}</h4>
                 <button
@@ -226,12 +226,12 @@ const GeneratedStep = ({ data, onStartOver }) => {
                 </p>
               </div>
 
-              <div className="flex justify-between items-center text-sm text-gray-400 mb-3">
+              <div className="flex justify-between items-center text-sm text-gray-400 mb-4">
                 <span>{caption.text.length} characters</span>
               </div>
             </div>
 
-            <div className="border-t border-gray-600 pt-4">
+            <div className="border-t border-gray-600 pt-4 mt-auto">
               <h5 className="text-sm font-medium text-gray-300 mb-2">Platform Validation:</h5>
               <div className="grid grid-cols-2 gap-2">
                 {data.selectedPlatforms.map(platform =>
@@ -243,43 +243,24 @@ const GeneratedStep = ({ data, onStartOver }) => {
         ))}
       </div>
 
-      <div className="border-t border-gray-600 pt-6">
-        <div className="flex justify-center space-x-4">
-          <button
-            onClick={generateCaptions}
-            disabled={isLoading}
-            className={`font-medium py-3 px-8 rounded-lg transition-colors ${
-              isLoading
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 text-white'
-            }`}
-          >
-            {isLoading ? 'Generating...' : 'Generate More'}
-          </button>
-          <button
-            onClick={onStartOver}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
-          >
-            Start Over
-          </button>
-        </div>
-      </div>
-
-      {/* Usage Information */}
-      <div className="bg-gray-800/50 border border-gray-600 rounded-lg p-4 mt-6">
-        <div className="flex items-start space-x-3">
-          <svg className="w-5 h-5 text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <h6 className="text-sm font-medium text-white mb-1">Platform Guidelines</h6>
-            <ul className="text-xs text-gray-400 space-y-1">
-              <li>• Green checkmark: Caption fits perfectly within platform limits</li>
-              <li>• Yellow warning: Caption exceeds ideal length but is still within limits</li>
-              <li>• Red warning: Caption exceeds maximum platform character limit</li>
-            </ul>
-          </div>
-        </div>
+      <div className="flex justify-center space-x-4">
+        <button
+          onClick={generateCaptions}
+          disabled={isLoading}
+          className={`font-medium py-3 px-8 rounded-lg transition-colors ${
+            isLoading
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
+          }`}
+        >
+          {isLoading ? 'Generating...' : 'Generate More'}
+        </button>
+        <button
+          onClick={onStartOver}
+          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-8 rounded-lg transition-colors"
+        >
+          Start Over
+        </button>
       </div>
     </div>
   );

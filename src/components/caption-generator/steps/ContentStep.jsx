@@ -146,11 +146,6 @@ const ContentStep = ({ data, onUpdate }) => {
         )}
       </div>
 
-      {/* Alternative Content Sources */}
-      <div className="text-center text-gray-400 text-sm font-medium mb-4">
-        — OR —
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Image Upload Field */}
         <div>
