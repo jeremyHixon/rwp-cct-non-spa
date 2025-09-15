@@ -100,6 +100,10 @@ class RWP_CCT_Plugin {
         require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-jwt-handler.php';
         require_once RWP_CCT_PLUGIN_DIR . 'includes/api/class-rwp-cct-auth-api.php';
         new RWP_CCT_Auth_API();
+
+        // Load security class
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/class-rwp-cct-security.php';
+        new RWP_CCT_Security();
     }
 
     /**
@@ -129,6 +133,9 @@ class RWP_CCT_Plugin {
             RWP_CCT_JWT_Handler::generate_jwt_secret();
         }
 
+        // Create Premium role
+        $this->rwp_cct_create_premium_role();
+
         do_action('rwp_cct_activated');
     }
 
@@ -139,7 +146,42 @@ class RWP_CCT_Plugin {
         // Flush rewrite rules
         flush_rewrite_rules();
 
+        // Remove Premium role
+        $this->rwp_cct_remove_premium_role();
+
         do_action('rwp_cct_deactivated');
+    }
+
+    /**
+     * Create Premium role
+     */
+    private function rwp_cct_create_premium_role() {
+        // Check if subscriber role exists
+        $subscriber_role = get_role('subscriber');
+        if (!$subscriber_role) {
+            return;
+        }
+
+        // Get subscriber capabilities as base
+        $subscriber_caps = $subscriber_role->capabilities;
+
+        // Add premium-specific capabilities
+        $premium_caps = array_merge($subscriber_caps, [
+            'access_premium_features' => true,
+            'rwp_cct_premium_access' => true
+        ]);
+
+        // Create the premium role if it doesn't exist
+        if (!get_role('rwp_cct_premium')) {
+            add_role('rwp_cct_premium', 'Premium', $premium_caps);
+        }
+    }
+
+    /**
+     * Remove Premium role
+     */
+    private function rwp_cct_remove_premium_role() {
+        remove_role('rwp_cct_premium');
     }
 }
 
