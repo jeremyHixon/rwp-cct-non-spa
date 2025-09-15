@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom component styles */
+@layer components {
+  .rwp-cct-form {
+    @apply max-w-md mx-auto bg-dark-800 p-8 rounded-lg shadow-dark-lg border border-dark-700;
+  }
+
+  .rwp-cct-input {
+    @apply w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors;
+  }
+
+  .rwp-cct-button {
+    @apply w-full px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-800;
+  }
+
+  .rwp-cct-button-secondary {
+    @apply w-full px-4 py-3 bg-dark-700 hover:bg-dark-600 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-dark-500 focus:ring-offset-2 focus:ring-offset-dark-800;
+  }
+
+  .rwp-cct-label {
+    @apply block text-sm font-medium text-dark-200 mb-2;
+  }
+
+  .rwp-cct-link {
+    @apply text-primary-400 hover:text-primary-300 underline transition-colors;
+  }
+
+  .rwp-cct-form-group {
+    @apply mb-6;
+  }
+
+  .rwp-cct-form-title {
+    @apply text-2xl font-bold text-white mb-6 text-center;
+  }
+
+  .rwp-cct-form-subtitle {
+    @apply text-dark-400 text-center mb-8;
+  }
+}
+
+/* Dark theme root styles */
+.rwp-cct-container {
+  @apply bg-dark-950 min-h-screen py-12 px-4;
+}
+
+/* Icon styles */
+.rwp-cct-icon {
+  @apply w-5 h-5;
+}
+
+/* Form validation states */
+.rwp-cct-input-error {
+  @apply border-red-500 focus:ring-red-500;
+}
+
+.rwp-cct-error-message {
+  @apply text-red-400 text-sm mt-1;
+}

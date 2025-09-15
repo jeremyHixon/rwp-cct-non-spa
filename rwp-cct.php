@@ -77,8 +77,20 @@ class RWP_CCT_Plugin {
      * Plugin initialization
      */
     public function rwp_cct_init() {
-        // Initialize plugin components here
+        // Load includes
+        $this->rwp_cct_load_includes();
+
+        // Initialize plugin components
         do_action('rwp_cct_init');
+    }
+
+    /**
+     * Load required files
+     */
+    private function rwp_cct_load_includes() {
+        // Load shortcodes class
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/frontend/class-shortcodes.php';
+        new RWP_CCT_Shortcodes();
     }
 
     /**
