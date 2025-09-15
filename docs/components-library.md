@@ -119,7 +119,13 @@ import AuthModal from './components/auth/AuthModal';
 
 **Password Strength Implementation:**
 ```jsx
-// Client-side fallback strength calculation
+// Client-side password strength calculation (no API dependency)
+const checkPasswordStrength = (password) => {
+  // Use client-side password strength calculation
+  const strength = getClientSidePasswordStrength(password);
+  setPasswordStrength(strength);
+};
+
 const getClientSidePasswordStrength = (password) => {
   let score = 0;
   const feedback = [];
@@ -130,12 +136,21 @@ const getClientSidePasswordStrength = (password) => {
   if (/[a-z]/.test(password)) score++;
   else feedback.push('Include lowercase letters');
 
-  // Additional checks for uppercase, numbers, special chars
+  if (/[A-Z]/.test(password)) score++;
+  else feedback.push('Include uppercase letters');
+
+  if (/[0-9]/.test(password)) score++;
+  else feedback.push('Include numbers');
+
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  else feedback.push('Include special characters');
 
   const levels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
   return { score, level: levels[Math.min(score, 4)], feedback };
 };
 ```
+
+**Note:** Password strength is calculated entirely on the client-side for better performance and to avoid unnecessary API calls. The original implementation included an API endpoint fallback, but this has been removed to eliminate 404 errors and simplify the authentication flow.
 
 #### AuthGate (React Component)
 *[Planned Component]* Wrapper component for protected content.

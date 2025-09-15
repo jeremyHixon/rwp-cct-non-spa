@@ -162,26 +162,10 @@ const RegisterForm = React.memo(({ onSubmit, isLoading, error, success }) => {
     }
   }, []);
 
-  const checkPasswordStrength = async (password) => {
-    try {
-      const response = await fetch(`${window.rwpCctGlobalAuth.apiUrl}auth/password-strength`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-WP-Nonce': window.rwpCctGlobalAuth.nonce
-        },
-        body: JSON.stringify({ password })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPasswordStrength(data);
-      }
-    } catch (error) {
-      // Fallback to client-side strength check
-      const strength = getClientSidePasswordStrength(password);
-      setPasswordStrength(strength);
-    }
+  const checkPasswordStrength = (password) => {
+    // Use client-side password strength calculation
+    const strength = getClientSidePasswordStrength(password);
+    setPasswordStrength(strength);
   };
 
   const getClientSidePasswordStrength = (password) => {

@@ -138,8 +138,9 @@
   - Gray (no input) → Red (very weak/weak) → Yellow (fair) → Blue (good) → Green (strong)
 - **Real-time feedback**: Updates as user types with immediate visual response
 - **Requirement feedback**: Displays specific missing requirements inline
-- **Fallback system**: Client-side calculation if API unavailable
+- **Implementation**: Client-side calculation only for better performance and reliability
 - **Positioning**: Below password field with clear visual hierarchy
+- **Performance**: No API calls - all calculations handled in browser for instant feedback
 
 ### Enhanced Loading States
 - **Button loading**: Spinner with contextual text ("Creating Account...", "Signing In...", "Sending Email...")
