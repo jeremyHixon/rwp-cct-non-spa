@@ -155,6 +155,17 @@ class RWP_CCT_Global_Auth {
             RWP_CCT_VERSION
         );
 
+        // Enqueue protected demo script if needed
+        if (has_shortcode(get_post()->post_content ?? '', 'rwp_cct_protected_demo') || is_admin()) {
+            wp_enqueue_script(
+                'rwp-cct-protected-demo',
+                RWP_CCT_PLUGIN_URL . 'assets/dist/js/protected-demo.js',
+                array('react', 'react-dom', 'rwp-cct-global-auth'),
+                RWP_CCT_VERSION,
+                true
+            );
+        }
+
         // Localize script with API data
         wp_localize_script('rwp-cct-global-auth', 'rwpCctGlobalAuth', array(
             'apiUrl' => rest_url('rwp-cct/v1/'),

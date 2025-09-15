@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ProtectedContent = React.memo({
+const ProtectedContent = React.memo(({
   requiredRole = 'subscriber',
   showPreview = true,
   disabledOpacity = 0.5,

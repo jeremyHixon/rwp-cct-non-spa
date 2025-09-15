@@ -104,6 +104,9 @@ class RWP_CCT_Plugin {
         // Load security class
         require_once RWP_CCT_PLUGIN_DIR . 'includes/class-rwp-cct-security.php';
         new RWP_CCT_Security();
+
+        // Load protected demo shortcode
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/shortcodes/class-rwp-cct-protected-demo.php';
     }
 
     /**
