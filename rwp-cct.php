@@ -107,6 +107,17 @@ class RWP_CCT_Plugin {
 
         // Load protected demo shortcode
         require_once RWP_CCT_PLUGIN_DIR . 'includes/shortcodes/class-rwp-cct-protected-demo.php';
+
+        // Load caption generator shortcode
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/shortcodes/class-rwp-cct-caption-generator-shortcode.php';
+
+        // Load admin classes (only in admin area)
+        if (is_admin()) {
+            require_once RWP_CCT_PLUGIN_DIR . 'includes/admin/class-rwp-cct-admin-options.php';
+            require_once RWP_CCT_PLUGIN_DIR . 'includes/admin/class-rwp-cct-openai-settings.php';
+            new RWP_CCT_Admin_Options();
+            new RWP_CCT_OpenAI_Settings();
+        }
     }
 
     /**

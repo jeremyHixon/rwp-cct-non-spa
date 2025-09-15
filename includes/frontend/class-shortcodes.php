@@ -467,6 +467,9 @@ class RWP_CCT_Shortcodes {
             if (has_shortcode($post->post_content, 'rwp_cct_style_guide')) {
                 $this->rwp_cct_enqueue_style_guide_assets();
             }
+            if (has_shortcode($post->post_content, 'rwp_cct_caption_generator')) {
+                $this->rwp_cct_enqueue_caption_generator_assets();
+            }
         }
     }
 
@@ -537,5 +540,44 @@ class RWP_CCT_Shortcodes {
                 }
             });
         }
+    }
+
+    /**
+     * Enqueue caption generator specific assets
+     */
+    private function rwp_cct_enqueue_caption_generator_assets() {
+        // Check if already enqueued
+        if (wp_script_is('rwp-cct-caption-generator', 'enqueued')) {
+            return;
+        }
+
+        // Enqueue React and ReactDOM from WordPress
+        wp_enqueue_script('react');
+        wp_enqueue_script('react-dom');
+
+        // Enqueue our compiled React app
+        wp_enqueue_script(
+            'rwp-cct-caption-generator',
+            RWP_CCT_PLUGIN_URL . 'assets/dist/js/caption-generator.js',
+            array('react', 'react-dom'),
+            RWP_CCT_VERSION,
+            true
+        );
+
+        // Enqueue compiled CSS
+        wp_enqueue_style(
+            'rwp-cct-caption-generator-styles',
+            RWP_CCT_PLUGIN_URL . 'assets/dist/css/caption-generator.css',
+            array(),
+            RWP_CCT_VERSION
+        );
+
+        // Localize script with API data
+        wp_localize_script('rwp-cct-caption-generator', 'rwpCctCaptionGenerator', array(
+            'apiUrl' => rest_url('rwp-cct/v1/'),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'pluginUrl' => RWP_CCT_PLUGIN_URL
+        ));
     }
 }

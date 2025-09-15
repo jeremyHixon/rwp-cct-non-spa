@@ -9,6 +9,7 @@ module.exports = (env, argv) => {
       main: './src/index.js',
       'global-auth': './src/global-auth.js',
       'protected-demo': './src/demo-init.js',
+      'caption-generator': './src/caption-generator-init.js',
     },
     output: {
       path: path.resolve(__dirname, 'assets/dist'),

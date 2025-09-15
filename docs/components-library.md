@@ -243,6 +243,279 @@ if (tokenStorage.isTokenExpired(token)) {
 
 ### Major Components
 
+#### Caption Generator (WordPress Shortcode)
+Complete 4-step wizard for creating social media captions with premium features and freemium access controls.
+
+**Shortcode:** `[rwp_cct_caption_generator]`
+
+**Features:**
+- Step-by-step wizard interface (4 steps: Content, Platforms, Tone, Generated)
+- Form validation with step-by-step navigation controls
+- Premium feature gating with AuthGate integration
+- Responsive design with mobile-optimized layouts
+- Dark theme consistency with authentication components
+- File upload handling with drag-and-drop interface
+
+**Step 1 - Content Input:**
+- Universal text description field (required, full-width, character count)
+- Premium image upload with drag-and-drop, 10MB limit, image preview
+- Premium URL field with basic validation and format checking
+- AuthGate-protected premium fields with appropriate fallback messages
+
+**Step 2 - Platform Selection:**
+- Multi-select platform cards with brand icons and character limits
+- 5 social media platforms: Instagram, X (Twitter), LinkedIn, Facebook, TikTok
+- Visual selection feedback with checkboxes and hover states
+- Platform-specific character limit display (ideal and maximum)
+- Selection validation requiring at least one platform
+- Responsive grid layout adapting to screen size
+
+**Components:**
+
+##### CaptionGenerator (`src/components/caption-generator/CaptionGenerator.jsx`)
+Main wizard container component with step management and form data persistence.
+
+**Props:**
+- None (uses internal state management)
+
+**State Management:**
+- `currentStep`: Current step number (1-4)
+- `formData`: Persistent form data across all steps
+- `totalSteps`: Total number of wizard steps (4)
+
+**Features:**
+- Step routing and navigation logic
+- Form data persistence across steps
+- Step validation for navigation control
+- Progress indicator integration
+
+**Usage:**
+```jsx
+import CaptionGenerator from './components/caption-generator/CaptionGenerator';
+<CaptionGenerator />
+```
+
+##### ContentStep (`src/components/caption-generator/steps/ContentStep.jsx`)
+Step 1 component with content input fields and premium access controls.
+
+**Props:**
+- `data`: Current form data object
+- `onUpdate`: Callback function to update form data
+
+**Form Fields:**
+- `description`: Universal text description (required)
+- `image`: Premium file upload with preview (File object)
+- `url`: Premium URL field with validation (string)
+
+**Features:**
+- Responsive layout (2-column premium fields on desktop, stacked on mobile)
+- Drag-and-drop file upload with visual feedback
+- File validation (10MB limit, image formats only)
+- URL format validation with error messaging
+- Character count display for description field
+- AuthGate integration for premium features
+
+**Usage:**
+```jsx
+import ContentStep from './components/caption-generator/steps/ContentStep';
+<ContentStep
+  data={formData}
+  onUpdate={updateFormData}
+/>
+```
+
+**File Upload Handling:**
+```jsx
+const handleFileSelect = (file) => {
+  if (file && file.size <= 10 * 1024 * 1024) { // 10MB limit
+    onUpdate({ image: file });
+  }
+};
+```
+
+##### PlatformStep (`src/components/caption-generator/steps/PlatformStep.jsx`)
+Step 2 component with multi-select platform selection and character limit display.
+
+**Props:**
+- `data`: Current form data object containing `selectedPlatforms` array
+- `onUpdate`: Callback function to update form data
+
+**Form Fields:**
+- `selectedPlatforms`: Array of selected platform IDs (string array)
+
+**Platform Data Structure:**
+```jsx
+const platforms = [
+  {
+    id: 'instagram',
+    name: 'Instagram',
+    icon: FaInstagram,
+    idealLength: 125,
+    maxLength: 2200,
+    color: '#E4405F' // Note: color property retained for data structure compatibility but not used in visual display
+  },
+  {
+    id: 'twitter',
+    name: 'X (Twitter)',
+    icon: FaXTwitter,
+    idealLength: 100,
+    maxLength: 280,
+    color: '#1DA1F2'
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn',
+    icon: FaLinkedin,
+    idealLength: 150,
+    maxLength: 1300,
+    color: '#0077B5'
+  },
+  {
+    id: 'facebook',
+    name: 'Facebook',
+    icon: FaFacebook,
+    idealLength: 80,
+    maxLength: 2000,
+    color: '#1877F2'
+  },
+  {
+    id: 'tiktok',
+    name: 'TikTok',
+    icon: SiTiktok,
+    idealLength: 100,
+    maxLength: 300,
+    color: '#000000'
+  }
+];
+```
+
+**Features:**
+- Multi-select platform cards with visual selection feedback
+- **Brand-specific icons**: White uniform styling (#ffffff) with consistent sizing (1.25rem)
+- **Character limit display**: Muted gray styling (#9CA3AF) for both ideal and maximum counts (no color distinction)
+- Platform selection cards with hover states and click handling
+- Responsive grid layout (1-3 columns based on screen size)
+- Form validation requiring at least one platform selected
+- Dark theme styling with brand color accents
+
+**Visual Specifications (Updated):**
+- **Icon Styling**: All brand icons display in white (#ffffff) regardless of platform brand colors
+- **Icon Sizing**: 1.25rem (20px) for platform cards
+- **Character Limits**: Single muted color (#9CA3AF) for both ideal and maximum text, smaller font size (0.875rem)
+- **Typography**: Reduced emphasis on character limits to focus attention on platform selection
+
+**Icon Dependencies:**
+```jsx
+import { FaInstagram, FaLinkedin, FaFacebook } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+import { SiTiktok } from 'react-icons/si';
+```
+
+**Selection Handling:**
+```jsx
+const handlePlatformToggle = (platformId) => {
+  const isSelected = selectedPlatforms.includes(platformId);
+  let newSelection;
+
+  if (isSelected) {
+    newSelection = selectedPlatforms.filter(id => id !== platformId);
+  } else {
+    newSelection = [...selectedPlatforms, platformId];
+  }
+
+  onUpdate({ selectedPlatforms: newSelection });
+};
+```
+
+**Usage:**
+```jsx
+import PlatformStep from './components/caption-generator/steps/PlatformStep';
+<PlatformStep
+  data={formData}
+  onUpdate={updateFormData}
+/>
+```
+
+**Validation Logic:**
+- Step is valid when `selectedPlatforms.length > 0`
+- Used in `CaptionGenerator.jsx` step validation for navigation control
+
+**Visual Components:**
+- Platform cards with checkboxes, icons, names, and character limits
+- Selection indicators with blue borders and background overlays
+- Responsive grid layout with mobile-optimized spacing
+
+##### StepNavigation (`src/components/caption-generator/components/StepNavigation.jsx`)
+Navigation component for wizard step control with validation-based enabling.
+
+**Props:**
+- `currentStep`: Current step number
+- `totalSteps`: Total steps in wizard
+- `isStepValid`: Boolean indicating if current step is valid
+- `onNext`: Callback for next button click
+- `onPrevious`: Callback for previous button click
+- `stepTitles`: Array of step titles for next button text
+
+**Features:**
+- Dynamic next button text ("Next: Platforms", "Generate Captions")
+- Validation-based button enabling/disabling
+- Step progress display ("Step 1 of 4")
+- Previous button disabled on first step
+
+**Button States:**
+- Previous: Disabled on step 1, enabled otherwise
+- Next: Disabled when `isStepValid` is false, dynamic text based on step
+
+**Usage:**
+```jsx
+import StepNavigation from './components/caption-generator/components/StepNavigation';
+<StepNavigation
+  currentStep={1}
+  totalSteps={4}
+  isStepValid={formData.description.trim().length > 0}
+  onNext={handleNext}
+  onPrevious={handlePrevious}
+  stepTitles={['Content', 'Platforms', 'Tone', 'Generated']}
+/>
+```
+
+##### StepIndicator (`src/components/caption-generator/components/StepIndicator.jsx`)
+Visual progress indicator showing current step and completion status.
+
+**Props:**
+- `currentStep`: Current step number
+- `totalSteps`: Total steps in wizard
+- `stepTitles`: Array of step title strings
+
+**Features:**
+- Visual progress with step circles and connecting lines
+- Three states per step: pending (gray), active (blue), completed (green)
+- Step titles displayed with color-coded text
+- Checkmark icons for completed steps
+
+**Visual States:**
+- Active: Blue circle with step number, blue text
+- Completed: Green circle with checkmark, green text
+- Pending: Gray circle with step number, gray text
+
+**Usage:**
+```jsx
+import StepIndicator from './components/caption-generator/components/StepIndicator';
+<StepIndicator
+  currentStep={2}
+  totalSteps={4}
+  stepTitles={['Content', 'Platforms', 'Tone', 'Generated']}
+/>
+```
+
+**Integration:**
+- Webpack entry point: `caption-generator` (19KB JS, 31.6KB CSS)
+- Automatic asset enqueuing when shortcode detected
+- WordPress shortcode: `includes/shortcodes/class-rwp-cct-caption-generator-shortcode.php`
+- React initialization: `src/caption-generator-init.js`
+
+**Implementation:** Steps 1-2 complete, Steps 3-4 pending development
+
 #### StyleGuide (WordPress Shortcode)
 Comprehensive dark theme style guide for Elementor and external tool reference.
 
