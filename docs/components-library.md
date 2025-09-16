@@ -241,6 +241,162 @@ if (tokenStorage.isTokenExpired(token)) {
 }
 ```
 
+### Common Components
+
+#### GuestConversionPrompt (React Component)
+Reusable conversion component that transforms technical authentication errors into conversion-optimized prompts for guest users across all content creator tools.
+
+**Location:** `src/components/common/GuestConversionPrompt.jsx`
+
+**Props:**
+- `toolName` (string, default: "Caption Generator"): Name of the current tool for messaging customization
+- `completedAction` (string, default: "Your captions are ready"): Success message describing what was completed
+- `customMessage` (string, optional): Custom conversion message, falls back to generic signup prompt
+
+**Features:**
+- **Reactive Authentication Detection**: Automatically shows/hides based on user authentication status
+- **Event-Driven Visibility**: Listens for `rwp-cct-auth-success` events to hide after login/registration
+- **AuthModal Integration**: Seamlessly integrates with existing authentication system
+- **Conversion-Optimized Design**: Benefits list with "Free account", "No credit card required", "Access immediately"
+- **Consistent Styling**: Dark theme with blue gradient background matching existing component patterns
+- **Tool-Agnostic**: Reusable across all content creator tools with customizable messaging
+
+**Authentication Detection:**
+```jsx
+const getStoredToken = () => {
+  return localStorage.getItem('rwp_cct_token') ||
+         localStorage.getItem('rwp_cct_jwt_token') ||
+         sessionStorage.getItem('rwp_cct_jwt_token');
+};
+
+const checkAuthStatus = () => {
+  const token = getStoredToken();
+  setIsAuthenticated(!!token);
+};
+```
+
+**Event Listeners:**
+```jsx
+useEffect(() => {
+  // Check initial auth status
+  checkAuthStatus();
+
+  // Listen for auth success events
+  const handleAuthSuccess = () => {
+    checkAuthStatus();
+  };
+
+  window.addEventListener('rwp-cct-auth-success', handleAuthSuccess);
+  window.addEventListener('storage', checkAuthStatus); // Cross-tab token changes
+
+  return () => {
+    window.removeEventListener('rwp-cct-auth-success', handleAuthSuccess);
+    window.removeEventListener('storage', checkAuthStatus);
+  };
+}, []);
+```
+
+**Usage:**
+```jsx
+import { GuestConversionPrompt } from './components';
+
+// Basic usage
+<GuestConversionPrompt />
+
+// Customized for specific tool
+<GuestConversionPrompt
+  toolName="Social Media Audit"
+  completedAction="Your audit is complete!"
+  customMessage="Sign up free to access your comprehensive social media analysis and actionable recommendations."
+/>
+```
+
+**Integration Pattern with Error Handling:**
+```jsx
+// In tool components (e.g., GeneratedStep.jsx)
+if (error) {
+  const isAuthError = error.includes('Authentication required') ||
+                     error.includes('unauthorized') ||
+                     error.includes('401') ||
+                     error.includes('403');
+
+  if (isAuthError && isGuest()) {
+    return (
+      <div className="space-y-6">
+        <GuestConversionPrompt
+          toolName="Caption Generator"
+          completedAction="Your captions are ready!"
+          customMessage="Sign up free to access your personalized social media captions and save them for future use."
+        />
+        {/* Additional UI elements */}
+      </div>
+    );
+  }
+
+  // Show technical errors for authenticated users or non-auth errors
+  return <TechnicalErrorDisplay error={error} />;
+}
+```
+
+**Automatic Tool Resumption:**
+The component works with automatic retry mechanisms in tool components:
+
+```jsx
+// In tool components - listen for auth success and retry
+useEffect(() => {
+  const handleAuthSuccess = () => {
+    if (error && hasValidFormData()) {
+      setError(null);
+      setHasGenerated(false);
+      retryToolFunction(); // e.g., generateCaptions()
+    }
+  };
+
+  window.addEventListener('rwp-cct-auth-success', handleAuthSuccess);
+
+  return () => {
+    window.removeEventListener('rwp-cct-auth-success', handleAuthSuccess);
+  };
+}, [error, formData]);
+```
+
+**Visual Design:**
+- **Container**: Blue-purple gradient background (`from-blue-900/20 to-purple-900/20`)
+- **Border**: Blue accent border (`border-blue-500/30`)
+- **Icon**: Large checkmark icon in blue circle background
+- **Typography**: White heading, gray body text, green checkmarks for benefits
+- **Buttons**: Primary blue CTA button, secondary gray button
+- **Layout**: Centered content with responsive button layout (stacked on mobile)
+
+**Benefits Display:**
+```jsx
+<div className="space-y-3 mb-8">
+  <div className="flex items-center justify-center space-x-3 text-green-400">
+    <CheckCircle className="w-5 h-5" />
+    <span className="text-gray-300">Free account</span>
+  </div>
+  <div className="flex items-center justify-center space-x-3 text-green-400">
+    <CheckCircle className="w-5 h-5" />
+    <span className="text-gray-300">No credit card required</span>
+  </div>
+  <div className="flex items-center justify-center space-x-3 text-green-400">
+    <CheckCircle className="w-5 h-5" />
+    <span className="text-gray-300">Access immediately</span>
+  </div>
+</div>
+```
+
+**Implementation Notes:**
+- Component only renders for unauthenticated users (`isAuthenticated === false`)
+- Automatically hides when user authenticates, triggering parent tool resumption
+- Works across all content creator tools with consistent branding
+- No configuration required beyond optional prop customization
+- Integrates with existing AuthModal system without additional setup
+
+**Export:** Available via `src/components/index.js` as named export
+
+**Result:** Provides a consistent, conversion-optimized experience that replaces technical error messages with user-friendly signup prompts across all content creator tools.
+
 ### Major Components
 
 #### Caption Generator (WordPress Shortcode)

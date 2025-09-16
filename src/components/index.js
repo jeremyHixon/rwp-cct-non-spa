@@ -6,6 +6,7 @@ export { default as HeaderUserElement } from './auth/HeaderUserElement';
 // Common Components
 export { default as AuthGate } from './common/AuthGate';
 export { default as ProtectedContent } from './common/ProtectedContent';
+export { default as GuestConversionPrompt } from './common/GuestConversionPrompt';
 
 // Caption Generator Components
 export { default as CaptionGenerator } from './caption-generator/CaptionGenerator';

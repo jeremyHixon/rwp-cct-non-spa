@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import GuestConversionPrompt from '../../common/GuestConversionPrompt';
 
 const GeneratedStep = ({ data, onStartOver }) => {
   const [captions, setCaptions] = useState([]);
@@ -30,6 +31,31 @@ const GeneratedStep = ({ data, onStartOver }) => {
       generateCaptions();
     }
   }, [data, hasGenerated]);
+
+  // Listen for authentication success and retry generation
+  useEffect(() => {
+    const handleAuthSuccess = () => {
+      // Check if we have an error (likely auth-related) and can retry
+      const hasContentSource = (
+        (data.description && data.description.trim().length > 0) ||
+        (data.image) ||
+        (data.url && data.url.trim().length > 0)
+      );
+
+      if (error && hasContentSource && data.selectedPlatforms.length > 0 && data.selectedTone) {
+        // Clear error and retry generation
+        setError(null);
+        setHasGenerated(false);
+        generateCaptions();
+      }
+    };
+
+    window.addEventListener('rwp-cct-auth-success', handleAuthSuccess);
+
+    return () => {
+      window.removeEventListener('rwp-cct-auth-success', handleAuthSuccess);
+    };
+  }, [error, data]);
 
   // Get stored JWT token
   const getStoredToken = () => {
@@ -157,8 +183,40 @@ const GeneratedStep = ({ data, onStartOver }) => {
     );
   }
 
-  // Error state
+  // Check if user is guest (unauthenticated)
+  const isGuest = () => {
+    const token = getStoredToken();
+    return !token;
+  };
+
+  // Error state - show guest conversion for auth errors, technical errors for other issues
   if (error) {
+    // Check if this is an authentication-related error
+    const isAuthError = error.includes('unauthorized') || error.includes('authentication') || error.includes('Authentication required') || error.includes('login') || error.includes('token') || error.includes('401') || error.includes('403');
+
+    // Show guest conversion for authentication errors when user is a guest
+    if (isAuthError && isGuest()) {
+      return (
+        <div className="space-y-6">
+          <GuestConversionPrompt
+            toolName="Caption Generator"
+            completedAction="Your captions are ready!"
+            customMessage="Sign up free to access your personalized social media captions and save them for future use."
+          />
+
+          <div className="flex justify-center">
+            <button
+              onClick={onStartOver}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+            >
+              Start Over
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Show technical error for other errors or authenticated users
     return (
       <div className="text-center py-8">
         <div className="bg-red-900/20 border border-red-500 rounded-lg p-6 mb-6">

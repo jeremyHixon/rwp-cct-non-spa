@@ -118,6 +118,10 @@ class RWP_CCT_Plugin {
         // Load caption generator shortcode
         require_once RWP_CCT_PLUGIN_DIR . 'includes/shortcodes/class-rwp-cct-caption-generator-shortcode.php';
 
+        // Load post types
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/post-types/class-rwp-cct-tools-post-type.php';
+        new RWP_CCT_Tools_Post_Type();
+
         // Load admin classes (only in admin area)
         if (is_admin()) {
             require_once RWP_CCT_PLUGIN_DIR . 'includes/admin/class-rwp-cct-admin-options.php';
@@ -142,6 +146,9 @@ class RWP_CCT_Plugin {
      * Plugin activation
      */
     public function rwp_cct_activate() {
+        // Load post types for activation
+        require_once RWP_CCT_PLUGIN_DIR . 'includes/post-types/class-rwp-cct-tools-post-type.php';
+
         // Flush rewrite rules
         flush_rewrite_rules();
 
